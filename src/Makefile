@@ -25,6 +25,38 @@ MYLDFLAGS=
 MYLIBS=
 MYOBJS=
 
+# Flags for enabling the Yk JIT.
+#
+# See langtest_c.rs from the `yk` repo for an explanation of the flags.
+YK_LIBDIR=	$(YK_DIR)/target/debug
+YK_CFLAGS=	-DUSE_YK \
+		-DLUA_USE_JUMPTABLE=0 \
+		-flto \
+		-I$(YK_DIR)/ykcapi
+YK_LDFLAGS=	-fuse-ld=lld \
+		-Wl,--mllvm=--embed-bitcode-final \
+		-Wl,--mllvm=--disable-branch-fold \
+		-Wl,--mllvm=--disable-block-placement \
+		-Wl,--mllvm=--disable-early-taildup \
+		-Wl,--mllvm=--disable-tail-duplicate \
+		-Wl,--mllvm=--yk-disable-tail-call-codegen \
+		-Wl,--mllvm=--yk-no-fallthrough \
+		-Wl,--mllvm=--yk-patch-control-point \
+		-Wl,--mllvm=--yk-block-disambiguate \
+		-Wl,--lto-basic-block-sections=labels \
+		-Wl,--export-dynamic \
+		-L$(YK_LIBDIR) \
+		-Wl,-rpath=$(YK_LIBDIR)
+YK_LIBS=	-lykcapi
+
+# If $(YK_DIR) is set then build with Yk JIT support.
+ifneq ($(strip $(YK_DIR)),)
+CC=		clang
+MYCFLAGS +=	$(YK_CFLAGS)
+MYLDFLAGS +=	$(YK_LDFLAGS)
+MYLIBS +=	$(YK_LIBS)
+endif
+
 # Special flags for compiler modules; -Os reduces code size.
 CMCFLAGS= 
 
