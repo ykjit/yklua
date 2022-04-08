@@ -24,6 +24,7 @@ cmake -DCMAKE_INSTALL_PREFIX=`pwd`/../inst \
 	-GNinja \
     ../llvm
 cmake --build .
+cmake --install .
 export PATH=`pwd`/../inst/bin:${PATH}
 cd ../..
 
