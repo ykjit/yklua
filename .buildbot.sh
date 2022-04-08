@@ -28,6 +28,9 @@ export PATH=`pwd`/../inst/bin:${PATH}
 cd ../..
 
 # Then we build Yk.
+export CARGO_HOME="`pwd`/.cargo"
+export RUSTUP_HOME="`pwd`/.rustup"
+export RUSTUP_INIT_SKIP_PATH_CHECK="yes"
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs > rustup.sh
 sh rustup.sh --default-host x86_64-unknown-linux-gnu \
     --default-toolchain nightly \
