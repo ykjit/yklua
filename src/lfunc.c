@@ -11,6 +11,7 @@
 
 
 #include <stddef.h>
+#include <stdlib.h>
 
 #include "lua.h"
 
@@ -20,6 +21,7 @@
 #include "lgc.h"
 #include "lmem.h"
 #include "lobject.h"
+#include "lopcodes.h"
 #include "lstate.h"
 
 
@@ -245,6 +247,9 @@ Proto *luaF_newproto (lua_State *L) {
   f->p = NULL;
   f->sizep = 0;
   f->code = NULL;
+#ifdef USE_YK
+  f->yklocs = NULL;
+#endif
   f->sizecode = 0;
   f->lineinfo = NULL;
   f->sizelineinfo = 0;
@@ -265,6 +270,12 @@ Proto *luaF_newproto (lua_State *L) {
 
 
 void luaF_freeproto (lua_State *L, Proto *f) {
+#ifdef USE_YK
+  for (int i = 0; i < f->sizecode; i++)
+    if (isLoopStart(f->code[i]))
+        yk_location_drop(f->yklocs[i]);
+  free(f->yklocs);
+#endif
   luaM_freearray(L, f->code, f->sizecode);
   luaM_freearray(L, f->p, f->sizep);
   luaM_freearray(L, f->k, f->sizek);

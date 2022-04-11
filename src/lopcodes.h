@@ -380,6 +380,15 @@ OP_EXTRAARG/*	Ax	extra (larger) argument for previous opcode	*/
 
 LUAI_DDEC(const lu_byte luaP_opmodes[NUM_OPCODES];)
 
+#ifdef USE_YK
+/*
+ * Is the instruction `i` the start of a loop?
+ *
+ * YKFIXME: Figure out what other opcodes can be loop starts.
+ */
+#define isLoopStart(i) (GET_OPCODE(i) == OP_FORLOOP)
+#endif
+
 #define getOpMode(m)	(cast(enum OpMode, luaP_opmodes[m] & 7))
 #define testAMode(m)	(luaP_opmodes[m] & (1 << 3))
 #define testTMode(m)	(luaP_opmodes[m] & (1 << 4))

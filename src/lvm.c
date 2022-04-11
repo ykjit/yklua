@@ -15,6 +15,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#ifdef USE_YK
+#include <yk.h>
+#endif
 
 #include "lua.h"
 
@@ -1131,12 +1134,33 @@ void luaV_finishOp (lua_State *L) {
   ra = RA(i); /* WARNING: any stack reallocation invalidates 'ra' */ \
 }
 
+/*
+ * Given a pointer to a Lua instruction in the instruction stream (`pc`) and
+ * the `CallInfo` for the current frame (`ci`), find the corresponding
+ * `YkLocation` (if there is one). If one is found, `ykloc` is set to point to
+ * it, otherwise `ykloc` is set `NULL`.
+ */
+#ifdef USE_YK
+#define lookup_ykloc() { \
+    lua_assert(isLua(ci)); \
+    Proto *p = ci_func(ci)->p; \
+    lua_assert(p->code <= pc && pc <= p->code + p->sizecode); \
+    if (isLoopStart(*pc)) \
+        ykloc = &p->yklocs[pc - p->code]; \
+    else \
+        ykloc = NULL; \
+}
+#endif
+
 #define vmdispatch(o)	switch(o)
 #define vmcase(l)	case l:
 #define vmbreak		break
 
-
-void luaV_execute (lua_State *L, CallInfo *ci) {
+/*
+ * YKFIXME: This function can be `void` once we fix:
+ * https://github.com/ykjit/yk/issues/537
+ */
+uint32_t luaV_execute (lua_State *L, CallInfo *ci) {
   LClosure *cl;
   TValue *k;
   StkId base;
@@ -1161,11 +1185,22 @@ void luaV_execute (lua_State *L, CallInfo *ci) {
     ci->u.l.trap = 1;  /* assume trap is on, for now */
   }
   base = ci->func + 1;
+#ifdef USE_YK
+  YkMT *mt = yk_mt_new();
+  yk_mt_hot_threshold_set(mt, 5); /* YKFIXME: allow changing threshold */
+#endif
   /* main loop of interpreter */
   for (;;) {
     Instruction i;  /* instruction being executed */
+#ifdef USE_YK
+    YkLocation *ykloc;
+    lookup_ykloc();
+#endif
     StkId ra;  /* instruction's A register */
     vmfetch();
+#ifdef USE_YK
+    yk_mt_control_point(mt, ykloc);
+#endif
     #if 0
       /* low-level line tracing for debugging Lua */
       printf("line: %d\n", luaG_getfuncline(cl->p, pcRel(pc, cl->p)));
@@ -1724,7 +1759,7 @@ void luaV_execute (lua_State *L, CallInfo *ci) {
         }
        ret:  /* return from a Lua function */
         if (ci->callstatus & CIST_FRESH)
-          return;  /* end this frame */
+          return 0;  /* end this frame */
         else {
           ci = ci->previous;
           goto returning;  /* continue running caller in this frame */
@@ -1835,6 +1870,10 @@ void luaV_execute (lua_State *L, CallInfo *ci) {
       }
     }
   }
+#if USE_YK
+  yk_mt_drop(mt);
+#endif
+  return 0;
 }
 
 /* }================================================================== */
