@@ -53,6 +53,7 @@ YK_LDFLAGS=	-fuse-ld=lld \
 YK_LIBS=	-lykcapi
 
 # If $(YK_DIR) is set then build with Yk JIT support.
+# The clang in $PATH must be the one from ykllvm.
 ifneq ($(strip $(YK_DIR)),)
 CC=		clang
 MYCFLAGS +=	$(YK_CFLAGS)
