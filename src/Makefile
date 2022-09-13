@@ -32,6 +32,7 @@ YK_LIBDIR=	$(YK_DIR)/target/debug
 YK_CFLAGS=	-DUSE_YK \
 		-DLUA_USE_JUMPTABLE=0 \
 		-flto \
+		-fyk-noinline-funcs-with-loops \
 		-I$(YK_DIR)/ykcapi
 YK_LDFLAGS=	-fuse-ld=lld \
 		-Wl,--mllvm=--embed-bitcode-final \
@@ -43,6 +44,7 @@ YK_LDFLAGS=	-fuse-ld=lld \
 		-Wl,--mllvm=--yk-no-fallthrough \
 		-Wl,--mllvm=--yk-patch-control-point \
 		-Wl,--mllvm=--yk-block-disambiguate \
+		-Wl,--mllvm=--yk-insert-stackmaps \
 		-Wl,--lto-basic-block-sections=labels \
 		-Wl,--export-dynamic \
 		-L$(YK_LIBDIR) \
