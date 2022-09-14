@@ -44,7 +44,7 @@ git clone --depth 1 https://github.com/softdevteam/yk
 cd yk && cargo build
 cd ..
 
-make -j `nproc` YK_DIR=`pwd`/yk YK_DIR=`pwd`/yk
+make -j `nproc` YK_DIR=`pwd`/yk
 cd tests
 # YKFIXME: The JIT can't yet run the test suite, but the following commented
 # commands are what we are aiming at having work.
