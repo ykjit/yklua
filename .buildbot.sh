@@ -16,12 +16,15 @@ git clone --depth 1 https://github.com/ykjit/ykllvm
 cd ykllvm
 mkdir build
 cd build
+# For why we turn off PIE:
+# https://github.com/llvm/llvm-project/issues/57085
 cmake -DCMAKE_INSTALL_PREFIX=`pwd`/../inst \
     -DLLVM_INSTALL_UTILS=On \
     -DCMAKE_BUILD_TYPE=release \
     -DLLVM_ENABLE_ASSERTIONS=On \
     -DLLVM_ENABLE_PROJECTS="lld;clang" \
-	-GNinja \
+    -DCLANG_DEFAULT_PIE_ON_LINUX=OFF \
+    -GNinja \
     ../llvm
 cmake --build .
 cmake --install .
