@@ -16,12 +16,15 @@ git clone --depth 1 https://github.com/ykjit/ykllvm
 cd ykllvm
 mkdir build
 cd build
+# For why we turn off PIE:
+# https://github.com/llvm/llvm-project/issues/57085
 cmake -DCMAKE_INSTALL_PREFIX=`pwd`/../inst \
     -DLLVM_INSTALL_UTILS=On \
     -DCMAKE_BUILD_TYPE=release \
     -DLLVM_ENABLE_ASSERTIONS=On \
     -DLLVM_ENABLE_PROJECTS="lld;clang" \
-	-GNinja \
+    -DCLANG_DEFAULT_PIE_ON_LINUX=OFF \
+    -GNinja \
     ../llvm
 cmake --build .
 cmake --install .
@@ -44,7 +47,7 @@ git clone --depth 1 https://github.com/softdevteam/yk
 cd yk && cargo build
 cd ..
 
-make -j `nproc` YK_DIR=`pwd`/yk YK_DIR=`pwd`/yk
+make -j `nproc` YK_DIR=`pwd`/yk
 cd tests
 # YKFIXME: The JIT can't yet run the test suite, but the following commented
 # commands are what we are aiming at having work.

@@ -7,7 +7,8 @@
 PLAT= guess
 
 CC= gcc -std=gnu99
-CFLAGS= -O2 -Wall -Wextra -DLUA_COMPAT_5_3 $(SYSCFLAGS) $(MYCFLAGS)
+# Note that for the Yk JIT we have to use -O0 for now.
+CFLAGS= -O0 -Wall -Wextra -DLUA_COMPAT_5_3 $(SYSCFLAGS) $(MYCFLAGS)
 LDFLAGS= $(SYSLDFLAGS) $(MYLDFLAGS)
 LIBS= -lm $(SYSLIBS) $(MYLIBS)
 
@@ -32,6 +33,7 @@ YK_LIBDIR=	$(YK_DIR)/target/debug
 YK_CFLAGS=	-DUSE_YK \
 		-DLUA_USE_JUMPTABLE=0 \
 		-flto \
+		-fyk-noinline-funcs-with-loops \
 		-I$(YK_DIR)/ykcapi
 YK_LDFLAGS=	-fuse-ld=lld \
 		-Wl,--mllvm=--embed-bitcode-final \
@@ -43,6 +45,7 @@ YK_LDFLAGS=	-fuse-ld=lld \
 		-Wl,--mllvm=--yk-no-fallthrough \
 		-Wl,--mllvm=--yk-patch-control-point \
 		-Wl,--mllvm=--yk-block-disambiguate \
+		-Wl,--mllvm=--yk-insert-stackmaps \
 		-Wl,--lto-basic-block-sections=labels \
 		-Wl,--export-dynamic \
 		-L$(YK_LIBDIR) \
@@ -50,6 +53,7 @@ YK_LDFLAGS=	-fuse-ld=lld \
 YK_LIBS=	-lykcapi
 
 # If $(YK_DIR) is set then build with Yk JIT support.
+# The clang in $PATH must be the one from ykllvm.
 ifneq ($(strip $(YK_DIR)),)
 CC=		clang
 MYCFLAGS +=	$(YK_CFLAGS)
