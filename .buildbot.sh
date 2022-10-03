@@ -45,9 +45,11 @@ export PATH=`pwd`/.cargo/bin/:$PATH
 
 git clone --depth 1 https://github.com/softdevteam/yk
 cd yk && cargo build
+export PATH=`pwd`/ykcapi/scripts:${PATH}
 cd ..
 
-make -j `nproc` YK_DIR=`pwd`/yk
+export YK_BUILD_TYPE=debug
+make -j `nproc`
 cd tests
 # YKFIXME: The JIT can't yet run the test suite, but the following commented
 # commands are what we are aiming at having work.
