@@ -28,29 +28,14 @@ MYOBJS=
 
 # Flags for enabling the Yk JIT.
 #
-# See langtest_c.rs from the `yk` repo for an explanation of the flags.
-YK_LIBDIR=	$(YK_DIR)/target/debug
+# The user is expected to have:
+#  - put `yk-config` in the `PATH`
+#  - set `YK_BUILD_TYPE` to either `debug` or `release`.
 YK_CFLAGS=	-DUSE_YK \
 		-DLUA_USE_JUMPTABLE=0 \
-		-flto \
-		-fyk-noinline-funcs-with-loops \
-		-I$(YK_DIR)/ykcapi
-YK_LDFLAGS=	-fuse-ld=lld \
-		-Wl,--mllvm=--embed-bitcode-final \
-		-Wl,--mllvm=--disable-branch-fold \
-		-Wl,--mllvm=--disable-block-placement \
-		-Wl,--mllvm=--disable-early-taildup \
-		-Wl,--mllvm=--disable-tail-duplicate \
-		-Wl,--mllvm=--yk-disable-tail-call-codegen \
-		-Wl,--mllvm=--yk-no-fallthrough \
-		-Wl,--mllvm=--yk-patch-control-point \
-		-Wl,--mllvm=--yk-block-disambiguate \
-		-Wl,--mllvm=--yk-insert-stackmaps \
-		-Wl,--lto-basic-block-sections=labels \
-		-Wl,--export-dynamic \
-		-L$(YK_LIBDIR) \
-		-Wl,-rpath=$(YK_LIBDIR)
-YK_LIBS=	-lykcapi
+		`yk-config ${YK_BUILD_TYPE} --cflags --cppflags`
+YK_LDFLAGS=	`yk-config ${YK_BUILD_TYPE} --ldflags`
+YK_LIBS=	`yk-config ${YK_BUILD_TYPE} --libs`
 
 # If $(YK_DIR) is set then build with Yk JIT support.
 # The clang in $PATH must be the one from ykllvm.
