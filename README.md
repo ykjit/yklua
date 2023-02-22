@@ -10,5 +10,7 @@ GNU make is required.
 
 Run:
 ```
-make YK_DIR=<path-to-compiled-yk>
+export PATH=/path/to/yk/ykcapi/scripts:${PATH}
+export YK_BUILD_TYPE=<debug|release>
+make
 ```
