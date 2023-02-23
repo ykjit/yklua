@@ -37,9 +37,9 @@ YK_CFLAGS=	-DUSE_YK \
 YK_LDFLAGS=	`yk-config ${YK_BUILD_TYPE} --ldflags`
 YK_LIBS=	`yk-config ${YK_BUILD_TYPE} --libs`
 
-# If $(YK_DIR) is set then build with Yk JIT support.
+# If $(YK_BUILD_TYPE) is set then build with Yk JIT support.
 # The clang in $PATH must be the one from ykllvm.
-ifneq ($(strip $(YK_DIR)),)
+ifneq ($(strip $(YK_BUILD_TYPE)),)
 CC=		clang
 MYCFLAGS +=	$(YK_CFLAGS)
 MYLDFLAGS +=	$(YK_LDFLAGS)
