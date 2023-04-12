@@ -1186,7 +1186,7 @@ uint32_t luaV_execute (lua_State *L, CallInfo *ci) {
   }
   base = ci->func + 1;
 #ifdef USE_YK
-  YkMT *mt = yk_mt_new();
+  YkMT *mt = yk_mt_new(NULL);
   yk_mt_hot_threshold_set(mt, 5); /* YKFIXME: allow changing threshold */
 #endif
   /* main loop of interpreter */
