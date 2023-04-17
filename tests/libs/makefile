@@ -1,6 +1,6 @@
 # change this variable to point to the directory with Lua headers
 # of the version being tested
-LUA_DIR = ../../
+LUA_DIR = ../../src
 
 CC = gcc
 
