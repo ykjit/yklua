@@ -307,7 +307,18 @@
 */
 #if defined(__GNUC__) && ((__GNUC__*100 + __GNUC_MINOR__) >= 302) && \
     defined(__ELF__)		/* { */
-#define LUAI_FUNC	__attribute__((visibility("internal"))) extern
+/*
+** YKFIXME: Multiple mysteries here.
+**
+** a) why does clang come in here? Does it pretend to be gcc?
+**
+** b) why does the YkLinkage ykllvm pass not nullify
+**    `__attribute__((visibility("internal")))`?
+**    We had a brief look, but couldn't work it out.
+**
+** https://github.com/ykjit/yklua/issues/6
+*/
+#define LUAI_FUNC	/*__attribute__((visibility("internal")))*/ extern
 #else				/* }{ */
 #define LUAI_FUNC	extern
 #endif				/* } */
