@@ -38,9 +38,8 @@ YK_LDFLAGS=	`yk-config ${YK_BUILD_TYPE} --ldflags`
 YK_LIBS=	`yk-config ${YK_BUILD_TYPE} --libs`
 
 # If $(YK_BUILD_TYPE) is set then build with Yk JIT support.
-# The clang in $PATH must be the one from ykllvm.
 ifneq ($(strip $(YK_BUILD_TYPE)),)
-CC=		clang
+CC=		`yk-config ${YK_BUILD_TYPE} --cc`
 MYCFLAGS +=	$(YK_CFLAGS)
 MYLDFLAGS +=	$(YK_LDFLAGS)
 MYLIBS +=	$(YK_LIBS)
