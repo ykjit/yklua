@@ -22,7 +22,9 @@ sh rustup.sh --default-host x86_64-unknown-linux-gnu \
 export PATH=`pwd`/.cargo/bin/:$PATH
 
 git clone --recurse-submodules --depth 1 https://github.com/softdevteam/yk
-cd yk && cargo build
+cd yk
+YKB_YKLLVM_BUILD_ARGS="define:CMAKE_C_COMPILER=/usr/bin/clang,define:CMAKE_CXX_COMPILER=/usr/bin/clang++" \
+    cargo build
 export PATH=`pwd`/ykcapi/scripts:${PATH}
 cd ..
 
