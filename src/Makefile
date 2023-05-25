@@ -64,7 +64,10 @@ LUAC_T=	luac
 LUAC_O=	luac.o
 
 ALL_O= $(BASE_O) $(LUA_O) $(LUAC_O)
-ALL_T= $(LUA_A) $(LUA_T) $(LUAC_T)
+# Yk: We don't build liblua.a because we don't need it and it doesn't LTO
+# properly anyway (`ar` calls the system clang's LTO plugin instead of
+# ykllvm's).
+ALL_T= $(LUA_T) $(LUAC_T) # $(LUA_A)
 ALL_A= $(LUA_A)
 
 # Targets start here.
