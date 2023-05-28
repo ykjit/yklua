@@ -13,6 +13,10 @@
 #include "ltm.h"
 #include "lzio.h"
 
+#ifdef USE_YK
+#  include <yk.h>
+#endif
+
 
 /*
 ** Some notes about garbage-collected objects: All objects in Lua must
@@ -295,6 +299,9 @@ typedef struct global_State {
   TString *strcache[STRCACHE_N][STRCACHE_M];  /* cache for strings in API */
   lua_WarnFunction warnf;  /* warning function */
   void *ud_warn;         /* auxiliary data to 'warnf' */
+#ifdef USE_YK
+  YkMT *yk_mt;
+#endif
 } global_State;
 
 
