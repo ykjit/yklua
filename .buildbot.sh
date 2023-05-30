@@ -25,7 +25,7 @@ git clone --recurse-submodules --depth 1 https://github.com/softdevteam/yk
 cd yk
 YKB_YKLLVM_BUILD_ARGS="define:CMAKE_C_COMPILER=/usr/bin/clang,define:CMAKE_CXX_COMPILER=/usr/bin/clang++" \
     cargo build
-export PATH=`pwd`/ykcapi/scripts:${PATH}
+export PATH=`pwd`/bin:${PATH}
 cd ..
 
 export YK_BUILD_TYPE=debug
