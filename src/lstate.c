@@ -277,6 +277,9 @@ static void close_state (lua_State *L) {
     luai_userstateclose(L);
   }
   luaM_freearray(L, G(L)->strt.hash, G(L)->strt.size);
+#if USE_YK
+  yk_mt_drop(G(L)->yk_mt);
+#endif
   freestack(L);
   lua_assert(gettotalbytes(g) == sizeof(LG));
   (*g->frealloc)(g->ud, fromstate(L), sizeof(LG), 0);  /* free main block */
@@ -399,6 +402,10 @@ LUA_API lua_State *lua_newstate (lua_Alloc f, void *ud) {
   setgcparam(g->genmajormul, LUAI_GENMAJORMUL);
   g->genminormul = LUAI_GENMINORMUL;
   for (i=0; i < LUA_NUMTAGS; i++) g->mt[i] = NULL;
+#ifdef USE_YK
+  g->yk_mt = yk_mt_new(NULL);
+  yk_mt_hot_threshold_set(g->yk_mt, 5); /* YKFIXME: allow changing threshold */
+#endif
   if (luaD_rawrunprotected(L, f_luaopen, NULL) != LUA_OK) {
     /* memory allocation error: free partial state */
     close_state(L);

@@ -1185,10 +1185,6 @@ uint32_t luaV_execute (lua_State *L, CallInfo *ci) {
     ci->u.l.trap = 1;  /* assume trap is on, for now */
   }
   base = ci->func + 1;
-#ifdef USE_YK
-  YkMT *mt = yk_mt_new(NULL);
-  yk_mt_hot_threshold_set(mt, 5); /* YKFIXME: allow changing threshold */
-#endif
   /* main loop of interpreter */
   for (;;) {
     Instruction i;  /* instruction being executed */
@@ -1199,7 +1195,7 @@ uint32_t luaV_execute (lua_State *L, CallInfo *ci) {
     StkId ra;  /* instruction's A register */
     vmfetch();
 #ifdef USE_YK
-    yk_mt_control_point(mt, ykloc);
+    yk_mt_control_point(G(L)->yk_mt, ykloc);
 #endif
     #if 0
       /* low-level line tracing for debugging Lua */
@@ -1870,9 +1866,6 @@ uint32_t luaV_execute (lua_State *L, CallInfo *ci) {
       }
     }
   }
-#if USE_YK
-  yk_mt_drop(mt);
-#endif
   return 0;
 }
 
