@@ -384,9 +384,10 @@ LUAI_DDEC(const lu_byte luaP_opmodes[NUM_OPCODES];)
 /*
  * Is the instruction `i` the start of a loop?
  *
- * YKFIXME: Figure out what other opcodes can be loop starts.
+ * YKFIXME: Numeric and Generic loops can be identified by OP_FORLOOP and OP_TFORLOOP opcodes. 
+ * Other loops like while and repeat-until are harder to identify since they are based on OP_JMP instruction.
  */
-#define isLoopStart(i) (GET_OPCODE(i) == OP_FORLOOP)
+#define isLoopStart(i) (GET_OPCODE(i) == OP_FORLOOP || GET_OPCODE(i) == OP_TFORLOOP)
 #endif
 
 #define getOpMode(m)	(cast(enum OpMode, luaP_opmodes[m] & 7))
