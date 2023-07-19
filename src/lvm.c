@@ -1156,11 +1156,8 @@ void luaV_finishOp (lua_State *L) {
 #define vmcase(l)	case l:
 #define vmbreak		break
 
-/*
- * YKFIXME: This function can be `void` once we fix:
- * https://github.com/ykjit/yk/issues/537
- */
-uint32_t luaV_execute (lua_State *L, CallInfo *ci) {
+
+void luaV_execute (lua_State *L, CallInfo *ci) {
   LClosure *cl;
   TValue *k;
   StkId base;
@@ -1755,7 +1752,7 @@ uint32_t luaV_execute (lua_State *L, CallInfo *ci) {
         }
        ret:  /* return from a Lua function */
         if (ci->callstatus & CIST_FRESH)
-          return 0;  /* end this frame */
+          return;  /* end this frame */
         else {
           ci = ci->previous;
           goto returning;  /* continue running caller in this frame */
@@ -1866,7 +1863,6 @@ uint32_t luaV_execute (lua_State *L, CallInfo *ci) {
       }
     }
   }
-  return 0;
 }
 
 /* }================================================================== */
