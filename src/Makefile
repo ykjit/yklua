@@ -40,6 +40,8 @@ YK_LIBS=	`yk-config ${YK_BUILD_TYPE} --libs`
 # If $(YK_BUILD_TYPE) is set then build with Yk JIT support.
 ifneq ($(strip $(YK_BUILD_TYPE)),)
 CC=		`yk-config ${YK_BUILD_TYPE} --cc`
+AR=		`yk-config ${YK_BUILD_TYPE} --ar` rcu
+RANLIB=		`yk-config ${YK_BUILD_TYPE} --ranlib`
 MYCFLAGS +=	$(YK_CFLAGS)
 MYLDFLAGS +=	$(YK_LDFLAGS)
 MYLIBS +=	$(YK_LIBS)
@@ -64,10 +66,7 @@ LUAC_T=	luac
 LUAC_O=	luac.o
 
 ALL_O= $(BASE_O) $(LUA_O) $(LUAC_O)
-# Yk: We don't build liblua.a because we don't need it and it doesn't LTO
-# properly anyway (`ar` calls the system clang's LTO plugin instead of
-# ykllvm's).
-ALL_T= $(LUA_T) $(LUAC_T) # $(LUA_A)
+ALL_T= $(LUA_T) $(LUAC_T) $(LUA_A)
 ALL_A= $(LUA_A)
 
 # Targets start here.
