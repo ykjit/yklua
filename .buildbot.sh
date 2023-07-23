@@ -39,3 +39,5 @@ cd tests
 #
 #../src/lua -e"_U=true" all.lua
 #YKD_SERIALISE_COMPILATION=1 ../src/lua -e"_U=true" all.lua
+
+../src/lua -e"_U=true" all.lua

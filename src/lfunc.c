@@ -271,9 +271,11 @@ Proto *luaF_newproto (lua_State *L) {
 
 void luaF_freeproto (lua_State *L, Proto *f) {
 #ifdef USE_YK
-  for (int i = 0; i < f->sizecode; i++)
-    if (isLoopStart(f->code[i]))
-        yk_location_drop(f->yklocs[i]);
+  for (int i = 0; i < f->sizecode; i++){
+      if (isLoopStart(f->code[i])){
+        // yk_location_drop(f->yklocs[i]);
+      }
+  }
   free(f->yklocs);
 #endif
   luaM_freearray(L, f->code, f->sizecode);

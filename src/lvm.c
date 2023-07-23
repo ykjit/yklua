@@ -1145,10 +1145,11 @@ void luaV_finishOp (lua_State *L) {
     lua_assert(isLua(ci)); \
     Proto *p = ci_func(ci)->p; \
     lua_assert(p->code <= pc && pc <= p->code + p->sizecode); \
-    if (isLoopStart(*pc)) \
-        ykloc = &p->yklocs[pc - p->code]; \
-    else \
+    if (isLoopStart(*pc)){ \
         ykloc = NULL; \
+    } else { \
+        ykloc = NULL; \
+    } \
 }
 #endif
 
