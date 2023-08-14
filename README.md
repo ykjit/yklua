@@ -4,7 +4,7 @@ This is the reference Lua interpreter with the Yk JIT retrofitted.
 
 This is experimental!
 
-## Building
+## Build
 
 GNU make is required.
 
@@ -15,10 +15,26 @@ export YK_BUILD_TYPE=<debug|release>
 make
 ```
 
-## Runinng
+## Run
 
 ```shell
 ./src/lua -e "print('Hello World')" # execute program passed in as string
 ./src/lua ./tests/utf8.lua # execute lua program file 
 ./src/luac ./tests/utf8.lua -o ./utf8.out # translates lua programs into Lua bytecode
+```
+
+## Test
+
+> Make sure to build the project first.
+
+```shell
+cd tests # navigate to tests directory
+../src/lua -e"_U=true" db.lua # run single file
+../src/lua -e"_U=true" all.lua # run complete test suite (Currently failing)
+```
+
+### Docker
+
+```shell
+run_docker_ci_job # local path to https://github.com/softdevteam/buildbot_config/blob/master/bin/run_docker_ci_job
 ```

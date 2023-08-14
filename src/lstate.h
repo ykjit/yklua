@@ -14,7 +14,7 @@
 #include "lzio.h"
 
 #ifdef USE_YK
-#  include <yk.h>
+#include <yk.h>
 #endif
 
 

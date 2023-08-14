@@ -43,15 +43,11 @@ cd tests
 #
 # Until we can run `all.lua` reliably, we just run the tests that we know to
 # run within reasonable time).
-#
-# Note that the following tests have been known to non-deterministically crash
-# (fairly rarely) and should be tested with `try_repeat` before being
-# re-enabled: literals, constructs, goto.
 LUA=../src/lua
 for serialise in 0 1; do
-    for test in api bwcoercion closure code coroutine events \
-        gengc pm tpack tracegc utf8 vararg; do
+    for test in api bwcoercion closure code coroutine constructs events \
+        gengc pm tpack tracegc utf8 vararg goto literals; do
         echo "### YKD_SERIALISE_COMPILATION=$serialise $test.lua ###"
-        YKD_SERIALISE_COMPILATION=$serialise ${LUA} ${test}.lua
+        YKD_SERIALISE_COMPILATION=$serialise ${LUA} -e"_U=true" ${test}.lua
     done
 done
