@@ -8,7 +8,7 @@
 #define LUA_CORE
 
 #ifdef USE_YK
-#define _DEFAULT_SOURCE /* for reallocarray() */
+#import "lyk.h"
 #endif
 
 #include "lprefix.h"
@@ -391,15 +391,7 @@ int luaK_code (FuncState *fs, Instruction i) {
                   MAX_INT, "opcodes");
   f->code[fs->pc++] = i;
 #ifdef USE_YK
-  // YKOPT: Reallocating for every instruction is inefficient.
-  if ((f->yklocs = reallocarray(f->yklocs, fs->pc,
-    sizeof(YkLocation))) == NULL)
-  {
-      luaG_runerror(fs->ls->L, "failed to allocate JIT location");
-  }
-  if (isLoopStart(i))
-      f->yklocs[idx] = yk_location_new();
-  /* `else f->yklocs[idx]` is undefined */
+  yk_set_location(f, i, idx, fs->pc);
 #endif
   savelineinfo(fs, f, fs->ls->lastline);
   return idx;  /* index of new instruction */

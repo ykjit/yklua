@@ -29,6 +29,9 @@
 #define luai_verifycode(L,f)  /* empty */
 #endif
 
+#ifdef USE_YK
+#include "lyk.h"
+#endif
 
 typedef struct {
   lua_State *L;
@@ -267,6 +270,9 @@ static void loadFunction (LoadState *S, Proto *f, TString *psource) {
   loadUpvalues(S, f);
   loadProtos(S, f);
   loadDebug(S, f);
+  #ifdef USE_YK
+  yk_set_locations(f);
+  #endif
 }
 
 

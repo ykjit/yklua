@@ -1141,15 +1141,7 @@ void luaV_finishOp (lua_State *L) {
  * it, otherwise `ykloc` is set `NULL`.
  */
 #ifdef USE_YK
-#define lookup_ykloc() { \
-    lua_assert(isLua(ci)); \
-    Proto *p = ci_func(ci)->p; \
-    lua_assert(p->code <= pc && pc <= p->code + p->sizecode); \
-    if (isLoopStart(*pc)) \
-        ykloc = &p->yklocs[pc - p->code]; \
-    else \
-        ykloc = NULL; \
-}
+#include "lyk.h"
 #endif
 
 #define vmdispatch(o)	switch(o)
@@ -1186,8 +1178,7 @@ void luaV_execute (lua_State *L, CallInfo *ci) {
   for (;;) {
     Instruction i;  /* instruction being executed */
 #ifdef USE_YK
-    YkLocation *ykloc;
-    lookup_ykloc();
+    YkLocation *ykloc = yk_lookup_ykloc(ci, pc);
 #endif
     StkId ra;  /* instruction's A register */
     vmfetch();

@@ -24,6 +24,9 @@
 #include "lopcodes.h"
 #include "lstate.h"
 
+#ifdef USE_YK  
+#include "lyk.h"
+#endif
 
 
 CClosure *luaF_newCclosure (lua_State *L, int nupvals) {
@@ -268,13 +271,9 @@ Proto *luaF_newproto (lua_State *L) {
   return f;
 }
 
-
 void luaF_freeproto (lua_State *L, Proto *f) {
 #ifdef USE_YK
-  for (int i = 0; i < f->sizecode; i++)
-    if (isLoopStart(f->code[i]))
-        yk_location_drop(f->yklocs[i]);
-  free(f->yklocs);
+  yk_free_locactions(f);
 #endif
   luaM_freearray(L, f->code, f->sizecode);
   luaM_freearray(L, f->p, f->sizep);
