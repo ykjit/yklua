@@ -46,7 +46,7 @@ cd tests
 LUA=../src/lua
 for serialise in 0 1; do
     for test in api bwcoercion closure code coroutine constructs events \
-        gengc pm tpack tracegc utf8 vararg goto literals; do
+        gengc pm tpack tracegc utf8 vararg goto literals cstack; do
         echo "### YKD_SERIALISE_COMPILATION=$serialise $test.lua ###"
         YKD_SERIALISE_COMPILATION=$serialise ${LUA} -e"_U=true" ${test}.lua
     done
