@@ -266,13 +266,13 @@ static void loadFunction (LoadState *S, Proto *f, TString *psource) {
   f->is_vararg = loadByte(S);
   f->maxstacksize = loadByte(S);
   loadCode(S, f);
+  #ifdef USE_YK
+  yk_set_locations(f);
+  #endif
   loadConstants(S, f);
   loadUpvalues(S, f);
   loadProtos(S, f);
   loadDebug(S, f);
-  #ifdef USE_YK
-  yk_set_locations(f);
-  #endif
 }
 
 
