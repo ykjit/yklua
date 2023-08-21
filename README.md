@@ -75,4 +75,4 @@ run_docker_ci_job # local path to https://github.com/softdevteam/buildbot_config
 | heavy.lua      | Failing | [issue](https://github.com/ykjit/yklua/issues/59) |
 | verybig.lua    | Failing | [issue](https://github.com/ykjit/yklua/issues/56) |
 | main.lua       | Failing | [issue](https://github.com/ykjit/yklua/issues/60) |
-| all.lua        | Failing |                                                   |
+| all.lua        | Failing | [issue](https://github.com/ykjit/yklua/issues/62) |
