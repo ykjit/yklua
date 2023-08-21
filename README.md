@@ -12,14 +12,14 @@ Run:
 ```shell
 export PATH=/path/to/yk/bin:${PATH} # local path to https://github.com/ykjit/yk/blob/master/bin/yk-config (yk needs to be compiled)
 export YK_BUILD_TYPE=<debug|release>
-make
+make -j "$(nproc)"
 ```
 
 ## Run
 
 ```shell
 ./src/lua -e "print('Hello World')" # execute program passed in as string
-./src/lua ./tests/utf8.lua # execute lua program file 
+./src/lua ./tests/utf8.lua # execute lua program file
 ./src/luac ./tests/utf8.lua -o ./utf8.out # translates lua programs into Lua bytecode
 ```
 
@@ -63,16 +63,16 @@ run_docker_ci_job # local path to https://github.com/softdevteam/buildbot_config
 | strings.lua    | Failing | [issue](https://github.com/ykjit/yklua/issues/39) |
 | calls.lua      | Failing | [issue](https://github.com/ykjit/yklua/issues/43) |
 | constructs.lua | Failing | [issue](https://github.com/ykjit/yklua/issues/44) |
-| errors.lua     | Failing | [issue](https://github.com/ykjit/yklua/issues/48) |                                             
+| errors.lua     | Failing | [issue](https://github.com/ykjit/yklua/issues/48) |
 | math.lua       | Failing | [issue](https://github.com/ykjit/yklua/issues/47) |
 | sort.lua       | Failing | [issue](https://github.com/ykjit/yklua/issues/46) |
 | nextvar.lua    | Failing | [issue](https://github.com/ykjit/yklua/issues/53) |
 | gc.lua         | Failing | [issue](https://github.com/ykjit/yklua/issues/52) |
 | utf8.lua       | Failing | [issue](https://github.com/ykjit/yklua/issues/54) |
-| coroutine.lua  | Failing | TODO                                              |
-| all.lua        | Failing | TODO                                              |
-| big.lua        | Failing | TODO                                              |
-| heavy.lua      | Failing | TODO                                              |
-| main.lua       | Failing | TODO                                              |
-| verybig.lua    | Failing | TODO                                              |
-| literals.lua   | Failing | TODO                                              |
+| big.lua        | Failing | [issue](https://github.com/ykjit/yklua/issues/55) |
+| literals.lua   | Failing | [issue](https://github.com/ykjit/yklua/issues/57) |
+| coroutine.lua  | Failing | [issue](https://github.com/ykjit/yklua/issues/58) |
+| heavy.lua      | Failing | [issue](https://github.com/ykjit/yklua/issues/59) |
+| verybig.lua    | Failing | [issue](https://github.com/ykjit/yklua/issues/56) |
+| main.lua       | Failing | [issue](https://github.com/ykjit/yklua/issues/60) |
+| all.lua        | Failing |                                                   |
