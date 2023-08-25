@@ -251,7 +251,7 @@ Proto *luaF_newproto (lua_State *L) {
   f->sizep = 0;
   f->code = NULL;
 #ifdef USE_YK
-  f->yklocs = NULL;
+  yk_on_newproto(f);
 #endif
   f->sizecode = 0;
   f->lineinfo = NULL;
@@ -273,7 +273,7 @@ Proto *luaF_newproto (lua_State *L) {
 
 void luaF_freeproto (lua_State *L, Proto *f) {
 #ifdef USE_YK
-  yk_free_locactions(f);
+  yk_on_proto_free(f);
 #endif
   luaM_freearray(L, f->code, f->sizecode);
   luaM_freearray(L, f->p, f->sizep);

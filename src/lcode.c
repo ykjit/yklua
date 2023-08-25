@@ -391,7 +391,7 @@ int luaK_code (FuncState *fs, Instruction i) {
                   MAX_INT, "opcodes");
   f->code[fs->pc++] = i;
 #ifdef USE_YK
-  yk_set_location(f, i, idx, fs->pc);
+  yk_ok_instruction_loaded(f, i, idx);
 #endif
   savelineinfo(fs, f, fs->ls->lastline);
   return idx;  /* index of new instruction */
