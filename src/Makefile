@@ -21,7 +21,8 @@ SYSCFLAGS=
 SYSLDFLAGS=
 SYSLIBS=
 
-MYCFLAGS=
+# YKFIXME: LYK_DEBUG is a debug flag for the Yk integration. Once YkLua is stable we can remove it.
+MYCFLAGS=-DLYK_DEBUG
 MYLDFLAGS=
 MYLIBS=
 MYOBJS=

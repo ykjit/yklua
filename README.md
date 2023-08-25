@@ -37,6 +37,15 @@ cd tests # navigate to tests directory
 
 ```shell
 run_docker_ci_job # local path to https://github.com/softdevteam/buildbot_config/blob/master/bin/run_docker_ci_job
+
+```
+## Debugging
+
+Use `LYK_VERBOSE` environment variable to print LYK (lua yk) debug logs:
+```shell
+LYK_VERBOSE=1 gdb --batch -ex 'r' -ex 'bt' --args ../src/lua all.lua 
+LYK_VERBOSE=1 ../src/lua all.lua 
+LYK_VERBOSE=1 sh ./test.sh
 ```
 
 ### State of Tests

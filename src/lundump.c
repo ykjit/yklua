@@ -267,7 +267,7 @@ static void loadFunction (LoadState *S, Proto *f, TString *psource) {
   f->maxstacksize = loadByte(S);
   loadCode(S, f);
   #ifdef USE_YK
-  yk_set_locations(f);
+  yk_on_proto_loaded(f);
   #endif
   loadConstants(S, f);
   loadUpvalues(S, f);

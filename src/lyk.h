@@ -5,11 +5,13 @@
 #include "lopcodes.h"
 #include "lstate.h"
 
-void yk_set_location(Proto *f, Instruction i, int idx, int pc);
+void yk_on_newproto(Proto *f);
 
-void yk_set_locations(Proto *f);
+void yk_ok_instruction_loaded(Proto *f, Instruction i, int idx);
 
-void yk_free_locactions(Proto *f);
+void yk_on_proto_loaded(Proto *f);
+
+void yk_on_proto_free(Proto *f);
 
 YkLocation* yk_lookup_ykloc(CallInfo *ci, Instruction *pc);
 
