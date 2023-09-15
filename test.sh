@@ -15,15 +15,21 @@ cd tests
 #
 # Until we can run `all.lua` reliably, we just run the tests that we know to
 # run within reasonable time).
+#
+# By default, when we run all.lua test suite, it runs underlying tests with a non-yk lua interpreter.
 
 LUA=../src/lua
 
+NON_SERIALISED="api bwcoercion closure code events gengc pm tpack tracegc vararg goto cstack locals"
+
 # Non-serialised compilation tests
-# YKFIXME: The following tests are known to work with non-serialised JIT
-for test in api bwcoercion closure code events \
-    gengc pm tpack tracegc vararg goto cstack locals; do
+# YKFIXME: The following tests are known to work only with non-serialised JIT
+for test in ${NON_SERIALISED}; do
     YKD_SERIALISE_COMPILATION=0 ${LUA} -e"_U=true" ${test}.lua
 done
 
-# Serialised compilation tests
-YKD_SERIALISE_COMPILATION=1 ${LUA} -e"_U=true" all.lua
+# YKFIXME: The following tests are known to work with serialised JIT
+serialised="${NON_SERIALISED} sort"
+for test in $serialised; do
+    YKD_SERIALISE_COMPILATION=1 ${LUA} -e"_U=true" ${test}.lua
+done
