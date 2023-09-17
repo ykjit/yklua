@@ -7,7 +7,7 @@
 
 void yk_on_newproto(Proto *f);
 
-void yk_ok_instruction_loaded(Proto *f, Instruction i, int idx);
+void yk_on_instruction_loaded(Proto *f, Instruction i, int idx);
 
 void yk_on_proto_loaded(Proto *f);
 

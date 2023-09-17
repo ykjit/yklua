@@ -90,7 +90,7 @@ void set_location(Proto *f, int i) {
   #endif // LYK_DEBUG
 }
 
-inline void yk_ok_instruction_loaded(Proto *f, Instruction i, int idx) {
+inline void yk_on_instruction_loaded(Proto *f, Instruction i, int idx) {
   // YKOPT: Reallocating for every instruction is inefficient.
   YkLocation **new_locations = calloc(f->sizecode, sizeof(YkLocation *));
   lua_assert(new_locations != NULL && "Expected yklocs to be defined!");
