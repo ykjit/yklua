@@ -18,12 +18,10 @@ cd tests
 
 LUA=../src/lua
 
-# Non-serialised compilation tests
-# YKFIXME: The following tests are known to work with non-serialised JIT
-for test in api bwcoercion closure code events \
-    gengc pm tpack tracegc vararg goto cstack locals; do
-    YKD_SERIALISE_COMPILATION=0 ${LUA} -e"_U=true" ${test}.lua
+for serialise in 0 1; do
+    for test in api bwcoercion closure code events \
+                gengc pm tpack tracegc vararg goto cstack locals; do
+        echo "### YKD_SERIALISE_COMPILATION=$serialise $test.lua ###"
+        YKD_SERIALISE_COMPILATION=$serialise ${LUA} ${test}.lua
+    done
 done
-
-# Serialised compilation tests
-YKD_SERIALISE_COMPILATION=1 ${LUA} -e"_U=true" all.lua
