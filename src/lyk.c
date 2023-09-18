@@ -124,7 +124,7 @@ inline void yk_on_proto_loaded(Proto *f) {
   lua_assert(f->yklocs != NULL && "Expected yklocs to be defined!");
   f->yklocs_size = f->sizecode;
   for (int i = 0; i < f->sizecode; i++) {
-    if (is_loop_start(i)) {
+    if (is_loop_start(f->code[i])) {
       set_location(f, i);
     }
   }
