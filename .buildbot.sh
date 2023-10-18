@@ -21,7 +21,7 @@ sh rustup.sh --default-host x86_64-unknown-linux-gnu \
     -y
 export PATH=`pwd`/.cargo/bin/:$PATH
 
-git clone --recurse-submodules --depth 1 https://github.com/softdevteam/yk
+git clone --recurse-submodules --depth 1 https://github.com/ykjit/yk
 cd yk
 
 echo "YK Commit: $(git show -s --format=%H)" 
