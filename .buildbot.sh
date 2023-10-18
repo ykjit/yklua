@@ -23,6 +23,9 @@ export PATH=`pwd`/.cargo/bin/:$PATH
 
 git clone --recurse-submodules --depth 1 https://github.com/softdevteam/yk
 cd yk
+
+echo "YK Commit: $(git show -s --format=%H)" 
+
 YKB_YKLLVM_BUILD_ARGS="define:CMAKE_C_COMPILER=/usr/bin/clang,define:CMAKE_CXX_COMPILER=/usr/bin/clang++" \
     cargo build
 export PATH=`pwd`/bin:${PATH}
