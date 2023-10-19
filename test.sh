@@ -21,7 +21,7 @@ LUA=../src/lua
 for serialise in 0 1; do
     for test in api bwcoercion closure code events \
                 gengc pm tpack tracegc vararg goto \
-                cstack locals literals; do
+                cstack locals literals files; do
         echo "### YKD_SERIALISE_COMPILATION=$serialise $test.lua ###"
         YKD_SERIALISE_COMPILATION=$serialise ${LUA} ${test}.lua
     done
