@@ -67,6 +67,7 @@ LYK_VERBOSE=1 sh ./test.sh
 | cstack.lua     | Working |                                                   |
 | locals.lua     | Working |                                                   |
 | coroutine.lua  | Working |                                                   |
+| literals.lua   | Working | [issue](https://github.com/ykjit/yklua/issues/57) |
 | db.lua         | Failing | [issue](https://github.com/ykjit/yklua/issues/38) |
 | attrib.lua     | Failing | [issue](https://github.com/ykjit/yklua/issues/42) |
 | bitwise.lua    | Failing | [issue](https://github.com/ykjit/yklua/issues/40) |
@@ -80,7 +81,7 @@ LYK_VERBOSE=1 sh ./test.sh
 | gc.lua         | Failing | [issue](https://github.com/ykjit/yklua/issues/52) |
 | utf8.lua       | Failing | [issue](https://github.com/ykjit/yklua/issues/54) |
 | big.lua        | Failing | [issue](https://github.com/ykjit/yklua/issues/55) |
-| literals.lua   | Failing | [issue](https://github.com/ykjit/yklua/issues/57) |
+| coroutine.lua  | Failing | [issue](https://github.com/ykjit/yklua/issues/58) |
 | heavy.lua      | Failing | [issue](https://github.com/ykjit/yklua/issues/59) |
 | verybig.lua    | Failing | [issue](https://github.com/ykjit/yklua/issues/56) |
 | main.lua       | Failing | [issue](https://github.com/ykjit/yklua/issues/60) |
