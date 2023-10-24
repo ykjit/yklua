@@ -57,7 +57,6 @@ LYK_VERBOSE=1 sh ./test.sh
 | closure.lua    | Working |                                                   |
 | code.lua       | Working |                                                   |
 | events.lua     | Working |                                                   |
-| files.lua      | Working |                                                   |
 | gengc.lua      | Working |                                                   |
 | goto.lua       | Working |                                                   |
 | pm.lua         | Working |                                                   |
@@ -66,6 +65,7 @@ LYK_VERBOSE=1 sh ./test.sh
 | vararg.lua     | Working |                                                   |
 | cstack.lua     | Working |                                                   |
 | locals.lua     | Working |                                                   |
+| files.lua      | Failing | [issue](https://github.com/ykjit/yklua/issues/74) |
 | literals.lua   | Working | [issue](https://github.com/ykjit/yklua/issues/57) |
 | db.lua         | Failing | [issue](https://github.com/ykjit/yklua/issues/38) |
 | attrib.lua     | Failing | [issue](https://github.com/ykjit/yklua/issues/42) |
