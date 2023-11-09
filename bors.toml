@@ -1,3 +1,0 @@
-status = ["buildbot/buildbot-build-script"]
-timeout_sec = 10800 # 3 hours
-delete_merged_branches = true
