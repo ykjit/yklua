@@ -27,18 +27,26 @@ make -j "$(nproc)"
 
 > Make sure to build the project first.
 
+### CI tests
+
+```shell
+sh ./test.sh
+```
+
+### Other ways of running tests
+
 ```shell
 cd tests # navigate to tests directory
 ../src/lua -e"_U=true" db.lua # run single file
-../src/lua -e"_U=true" all.lua # run complete test suite (Currently failing)
+../src/lua -e"_U=true" all.lua # run complete test suite (Currently failing for non-serialised compilation)
 ```
 
 ### Docker
 
 ```shell
 run_docker_ci_job # local path to https://github.com/softdevteam/buildbot_config/blob/master/bin/run_docker_ci_job
-
 ```
+
 ## Debugging
 
 Use `LYK_VERBOSE` environment variable to print LYK (lua yk) debug logs:
@@ -50,38 +58,38 @@ LYK_VERBOSE=1 sh ./test.sh
 
 ### State of Tests
 
-| Test           | Status  | Issue                                             |
-| -------------- | ------- | ------------------------------------------------- |
-| api.lua        | Working |                                                   |
-| bwcoercion.lua | Working |                                                   |
-| closure.lua    | Working |                                                   |
-| code.lua       | Working |                                                   |
-| events.lua     | Working |                                                   |
-| gengc.lua      | Working |                                                   |
-| goto.lua       | Working |                                                   |
-| pm.lua         | Working |                                                   |
-| tpack.lua      | Working |                                                   |
-| tracegc.lua    | Working |                                                   |
-| vararg.lua     | Working |                                                   |
-| cstack.lua     | Working |                                                   |
-| locals.lua     | Working |                                                   |
-| files.lua      | Failing | [issue](https://github.com/ykjit/yklua/issues/74) |
-| literals.lua   | Working | [issue](https://github.com/ykjit/yklua/issues/57) |
-| db.lua         | Failing | [issue](https://github.com/ykjit/yklua/issues/38) |
-| attrib.lua     | Failing | [issue](https://github.com/ykjit/yklua/issues/42) |
-| bitwise.lua    | Failing | [issue](https://github.com/ykjit/yklua/issues/40) |
-| strings.lua    | Failing | [issue](https://github.com/ykjit/yklua/issues/39) |
-| calls.lua      | Failing | [issue](https://github.com/ykjit/yklua/issues/43) |
-| constructs.lua | Failing | [issue](https://github.com/ykjit/yklua/issues/44) |
-| errors.lua     | Failing | [issue](https://github.com/ykjit/yklua/issues/48) |
-| math.lua       | Failing | [issue](https://github.com/ykjit/yklua/issues/47) |
-| sort.lua       | Failing | [issue](https://github.com/ykjit/yklua/issues/46) |
-| nextvar.lua    | Failing | [issue](https://github.com/ykjit/yklua/issues/53) |
-| gc.lua         | Failing | [issue](https://github.com/ykjit/yklua/issues/52) |
-| utf8.lua       | Failing | [issue](https://github.com/ykjit/yklua/issues/54) |
-| big.lua        | Failing | [issue](https://github.com/ykjit/yklua/issues/55) |
-| coroutine.lua  | Failing | [issue](https://github.com/ykjit/yklua/issues/58) |
-| heavy.lua      | Failing | [issue](https://github.com/ykjit/yklua/issues/59) |
-| verybig.lua    | Failing | [issue](https://github.com/ykjit/yklua/issues/56) |
-| main.lua       | Failing | [issue](https://github.com/ykjit/yklua/issues/60) |
-| all.lua        | Failing | [issue](https://github.com/ykjit/yklua/issues/62) |
+| Test           | Status (Paralel)  | Status (Serialised)| Issue                                             |
+| -------------- | ----------------- | -------------------| ------------------------------------------------- |
+| api.lua        | Working           | Working            |                                                   |
+| bwcoercion.lua | Working           | Working            |                                                   |
+| closure.lua    | Working           | Working            |                                                   |
+| code.lua       | Working           | Working            |                                                   |
+| events.lua     | Working           | Working            |                                                   |
+| gengc.lua      | Working           | Working            |                                                   |
+| goto.lua       | Working           | Working            |                                                   |
+| pm.lua         | Working           | Working            |                                                   |
+| tpack.lua      | Working           | Working            |                                                   |
+| tracegc.lua    | Working           | Working            |                                                   |
+| vararg.lua     | Working           | Working            |                                                   |
+| cstack.lua     | Working           | Working            |                                                   |
+| locals.lua     | Working           | Working            |                                                   |
+| files.lua      | Failing           | Working            | [issue](https://github.com/ykjit/yklua/issues/74) |
+| literals.lua   | Working           | Working            | [issue](https://github.com/ykjit/yklua/issues/57) |
+| db.lua         | Failing           | Working            | [issue](https://github.com/ykjit/yklua/issues/38) |
+| attrib.lua     | Failing           | Working            | [issue](https://github.com/ykjit/yklua/issues/42) |
+| bitwise.lua    | Failing           | Working            | [issue](https://github.com/ykjit/yklua/issues/40) |
+| strings.lua    | Failing           | Working            | [issue](https://github.com/ykjit/yklua/issues/39) |
+| calls.lua      | Failing           | Working            | [issue](https://github.com/ykjit/yklua/issues/43) |
+| constructs.lua | Failing           | Working            | [issue](https://github.com/ykjit/yklua/issues/44) |
+| errors.lua     | Failing           | Working            | [issue](https://github.com/ykjit/yklua/issues/48) |
+| math.lua       | Failing           | Working            | [issue](https://github.com/ykjit/yklua/issues/47) |
+| sort.lua       | Failing           | Working            | [issue](https://github.com/ykjit/yklua/issues/46) |
+| nextvar.lua    | Failing           | Working            | [issue](https://github.com/ykjit/yklua/issues/53) |
+| gc.lua         | Failing           | Working            | [issue](https://github.com/ykjit/yklua/issues/52) |
+| utf8.lua       | Failing           | Working            | [issue](https://github.com/ykjit/yklua/issues/54) |
+| big.lua        | Failing           | Working            | [issue](https://github.com/ykjit/yklua/issues/55) |
+| coroutine.lua  | Failing           | Working            | [issue](https://github.com/ykjit/yklua/issues/58) |
+| heavy.lua      | Failing           | Working            | [issue](https://github.com/ykjit/yklua/issues/59) |
+| verybig.lua    | Failing           | Working            | [issue](https://github.com/ykjit/yklua/issues/56) |
+| main.lua       | Failing           | Working            | [issue](https://github.com/ykjit/yklua/issues/60) |
+| all.lua        | Failing           | Working            | [issue](https://github.com/ykjit/yklua/issues/62) |
