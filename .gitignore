@@ -2,3 +2,4 @@
 **/*.a
 src/lua
 src/luac
+creduce/src/*
