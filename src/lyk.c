@@ -1,17 +1,17 @@
 #ifdef USE_YK
 
 #include "lyk.h"
+#include "ldebug.h"
 #include "lobject.h"
 #include "lopcodes.h"
-#include "ldebug.h"
+#include "stdio.h"
 #include <stdlib.h>
 #include <yk.h>
-#include "stdio.h"
 /*
  *  Function prototypes in Lua are loaded through two methods:
  *    1.  They are loaded from text source via the `luaY_parser`.
- *    2.  They can also be loaded from binary representation using `luaU_undump`, where
- *        prototypes are previously dumped and saved.
+ *    2.  They can also be loaded from binary representation using
+ * `luaU_undump`, where prototypes are previously dumped and saved.
  *
  *  Yk tracing locations are allocated using both of these methods
  *  using `yk_set_location` and `yk_set_locations` respectively.
@@ -28,7 +28,7 @@ int is_verbose() {
 }
 
 void print_proto_info(char *msg, Proto *f) {
-  if (!is_verbose()){
+  if (!is_verbose()) {
     return;
   }
   char *source = NULL;
@@ -39,7 +39,8 @@ void print_proto_info(char *msg, Proto *f) {
   if (f->locvars != NULL && f->locvars->varname != NULL) {
     vars = getstr(f->locvars->varname);
   }
-  printf("[LYK] %s. \t f:\t%p \t source: %s: \t vars: %s", msg, f, source, vars);
+  printf("[LYK] %s. \t f:\t%p \t source: %s: \t vars: %s", msg, f, source,
+         vars);
   if (f->yklocs != NULL) {
     printf("\t sizecode: %d", f->sizecode);
   }
@@ -48,20 +49,20 @@ void print_proto_info(char *msg, Proto *f) {
 #endif // LYK_DEBUG
 
 void yk_on_newproto(Proto *f) {
-  #ifdef LYK_DEBUG
+#ifdef LYK_DEBUG
   if (is_verbose()) {
     printf("[LYK] yk_new_proto %p\n", f);
   }
-  #endif // LYK_DEBUG
+#endif // LYK_DEBUG
   f->yklocs = NULL;
 }
 
 /*
  *  Is the instruction `i` the start of a loop?
  *
- *  YKFIXME: Numeric and Generic loops can be identified by `OP_FORLOOP` and `OP_TFORLOOP` opcodes.
- *  Other loops like while and repeat-until are harder to identify since they are based on
- *  `OP_JMP` instruction.
+ *  YKFIXME: Numeric and Generic loops can be identified by `OP_FORLOOP` and
+ * `OP_TFORLOOP` opcodes. Other loops like while and repeat-until are harder to
+ * identify since they are based on `OP_JMP` instruction.
  */
 int is_loop_start(Instruction i) {
   return (GET_OPCODE(i) == OP_FORLOOP || GET_OPCODE(i) == OP_TFORLOOP);
@@ -83,11 +84,11 @@ void set_location(Proto *f, int i) {
   lua_assert(loc != NULL && "Expected loc to be defined!");
   *loc = yk_location_new();
   f->yklocs[i] = loc;
-  #ifdef LYK_DEBUG
-  if (is_verbose()){
+#ifdef LYK_DEBUG
+  if (is_verbose()) {
     printf("[LYK] yk_location_new. %p->yklocs[%d]=%p\n", f, i, loc);
   }
-  #endif // LYK_DEBUG
+#endif // LYK_DEBUG
 }
 
 inline void yk_on_instruction_loaded(Proto *f, Instruction i, int idx) {
@@ -100,8 +101,7 @@ inline void yk_on_instruction_loaded(Proto *f, Instruction i, int idx) {
     for (int i = 0; i < f->yklocs_size; i++) {
       if (f->yklocs[i] != NULL) {
         new_locations[i] = f->yklocs[i];
-      }
-      else {
+      } else {
         new_locations[i] = NULL;
       }
     }
@@ -115,9 +115,9 @@ inline void yk_on_instruction_loaded(Proto *f, Instruction i, int idx) {
 }
 
 inline void yk_on_proto_loaded(Proto *f) {
-  #ifdef LYK_DEBUG
+#ifdef LYK_DEBUG
   print_proto_info("yk_set_locations", f);
-  #endif // LYK_DEBUG
+#endif // LYK_DEBUG
   f->yklocs = calloc(f->sizecode, sizeof(YkLocation *));
   lua_assert(f->yklocs != NULL && "Expected yklocs to be defined!");
   f->yklocs_size = f->sizecode;
@@ -132,15 +132,15 @@ inline void yk_on_proto_free(Proto *f) {
   // YK locations are initialised as close as possible to the function loading,
   // However, this load can fail before we initialise `yklocs`.
   // This NULL check is a workaround for that.
-  if (f->yklocs != NULL)  {
+  if (f->yklocs != NULL) {
     for (int i = 0; i < f->sizecode; i++) {
       YkLocation *loc = f->yklocs[i];
       if (loc != NULL) {
-        #ifdef LYK_DEBUG
-        if (is_verbose()){
+#ifdef LYK_DEBUG
+        if (is_verbose()) {
           printf("[LYK] yk_location_drop. %p->yklocs[%d]=%p\n", f, i, loc);
         }
-        #endif // LYK_DEBUG
+#endif // LYK_DEBUG
         yk_location_drop(*loc);
         free(loc);
       }
