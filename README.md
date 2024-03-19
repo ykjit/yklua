@@ -15,6 +15,24 @@ export YK_BUILD_TYPE=<debug|release>
 make -j "$(nproc)"
 ```
 
+### Compilation Flags
+
+`LYK_DEBUG` - conditionally compiles debugging functionality for YK integration.
+
+### Environment variables
+
+`LYK_VERBOSE` - enables verbose logs for YK integration. Used for tracking location allocation and function prototypes in the Lua runtime.
+
+> Will only work if yklua is compiled with `LYK_DEBUG` flag.
+
+Example:
+```shell
+LYK_VERBOSE=1 ./src/lua ./fibo.lua
+[LYK] yk_new_proto 0x137ee60
+[LYK] yk_location_new. 0x137ee60->yklocs[12]=0x1378a60
+[LYK] yk_location_drop. 0x137ee60->yklocs[12]=0x1378a60
+```
+
 ## Run
 
 ```shell
@@ -51,8 +69,8 @@ run_docker_ci_job # local path to https://github.com/softdevteam/buildbot_config
 
 Use `LYK_VERBOSE` environment variable to print LYK (lua yk) debug logs:
 ```shell
-LYK_VERBOSE=1 gdb --batch -ex 'r' -ex 'bt' --args ../src/lua all.lua 
-LYK_VERBOSE=1 ../src/lua all.lua 
+LYK_VERBOSE=1 gdb --batch -ex 'r' -ex 'bt' --args ../src/lua all.lua
+LYK_VERBOSE=1 ../src/lua all.lua
 LYK_VERBOSE=1 sh ./test.sh
 ```
 
