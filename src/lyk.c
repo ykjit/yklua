@@ -94,7 +94,7 @@ inline void yk_on_instruction_loaded(Proto *f, Instruction i, int idx) {
   // YKOPT: Reallocating for every instruction is inefficient.
   YkLocation **new_locations = calloc(f->sizecode, sizeof(YkLocation *));
   lua_assert(new_locations != NULL && "Expected yklocs to be defined!");
-  
+
   // copy previous locations over
   if (f->yklocs != NULL) {
     for (int i = 0; i < f->yklocs_size; i++) {
@@ -109,11 +109,9 @@ inline void yk_on_instruction_loaded(Proto *f, Instruction i, int idx) {
   }
   f->yklocs = new_locations;
   f->yklocs_size = f->sizecode;
-  #ifdef LYK_DEBUG
   if (is_loop_start(i)) {
     set_location(f, idx);
   }
-  #endif // LYK_DEBUG
 }
 
 inline void yk_on_proto_loaded(Proto *f) {
