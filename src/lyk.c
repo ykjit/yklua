@@ -92,23 +92,24 @@ void set_location(Proto *f, int i) {
 }
 
 inline void yk_on_instruction_loaded(Proto *f, Instruction i, int idx) {
-  // YKOPT: Reallocating for every instruction is inefficient.
-  YkLocation **new_locations = calloc(f->sizecode, sizeof(YkLocation *));
-  lua_assert(new_locations != NULL && "Expected yklocs to be defined!");
+  if (f->yklocs == NULL) {
+    // Allocate initial array
+    f->yklocs = calloc(f->sizecode, sizeof(YkLocation *));
+    lua_assert(f->yklocs != NULL && "Expected yklocs to be defined!");
+    f->yklocs_size = f->sizecode;
+  } else if (f->sizecode > f->yklocs_size) {
+    // Extend the array
+    YkLocation **new_locations =
+        realloc(f->yklocs, f->sizecode * sizeof(YkLocation *));
+    lua_assert(new_locations != NULL && "Expected yklocs to be defined!");
 
-  // copy previous locations over
-  if (f->yklocs != NULL) {
-    for (int i = 0; i < f->yklocs_size; i++) {
-      if (f->yklocs[i] != NULL) {
-        new_locations[i] = f->yklocs[i];
-      } else {
-        new_locations[i] = NULL;
-      }
+    for (int i = f->yklocs_size; i < f->sizecode; i++) {
+      new_locations[i] = NULL;
     }
-    free(f->yklocs);
+
+    f->yklocs = new_locations;
+    f->yklocs_size = f->sizecode;
   }
-  f->yklocs = new_locations;
-  f->yklocs_size = f->sizecode;
   if (is_loop_start(i)) {
     set_location(f, idx);
   }
