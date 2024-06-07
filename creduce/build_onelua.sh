@@ -18,4 +18,4 @@ cp "./one.c" "./src/one.c"
 
 cd "./src"
 
-make onelua
+make onelua.c
