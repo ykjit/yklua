@@ -3,12 +3,12 @@
 set -e
 
 if [ -z "${YKLUA_HOME}" ]; then
-    echo "YKLUA_HOME environment variable is not defined."; 
+    echo "YKLUA_HOME environment variable is not defined.";
     exit 1
 fi
 
 if [ -z "${YK_BUILD_TYPE}" ]; then
-    echo "YK_BUILD_TYPE environment variable is not defined."; 
+    echo "YK_BUILD_TYPE environment variable is not defined.";
     exit 1
 fi
 
@@ -20,8 +20,6 @@ fi
 
 cp -r "${YKLUA_HOME}/creduce/src" ./
 cd ./src
-
-make onelua
 
 # oracle
 ./onelua -e "print('hello world')" | grep "hello world"
