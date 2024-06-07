@@ -14,7 +14,6 @@ fi
 
 cp -r "../src" "./src"
 cp "Makefile" "./src/Makefile"
-cp ./cvise.example.sh "./src/cvise.example.sh"
 cp "./one.c" "./src/one.c"
 
 cd "./src"

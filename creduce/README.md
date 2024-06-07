@@ -28,7 +28,9 @@ Run creduce with `cvise`:
 
 ```shell
 cd src
-cvise ./cvise.example.sh onelua.c
+cvise /path/to/interest_script.sh onelua.c
 ```
+
+See `cvise.example.sh` for an example interest script.
 
 > cvice will reduce the lines of the `onelua.c` file as long as `./cvise.example.sh` executes successfully. It will overwrite the `onelua.c` file in place. Original content can be found in `onelua.c.orig`.
