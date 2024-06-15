@@ -409,6 +409,9 @@ LUA_API lua_State *lua_newstate (lua_Alloc f, void *ud) {
     close_state(L);
     L = NULL;
   }
+#ifdef USE_YK
+  g->yk_mt = yk_mt_new(NULL);
+#endif
   return L;
 }
 

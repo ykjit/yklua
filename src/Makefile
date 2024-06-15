@@ -16,6 +16,15 @@ RANLIB= ranlib
 RM= rm -f
 UNAME= uname
 
+ifneq ($(strip $(YK_BUILD_TYPE)),)
+CC=		`yk-config ${YK_BUILD_TYPE} --cc`
+AR=		`yk-config ${YK_BUILD_TYPE} --ar` rcu
+RANLIB=		`yk-config ${YK_BUILD_TYPE} --ranlib`
+CFLAGS=		`yk-config ${YK_BUILD_TYPE} --cflags --cppflags` -O0 -Wall -Wextra -DLUA_COMPAT_5_3 -DUSE_YK -DLUA_USE_JUMPTABLE=0
+LDFLAGS=	`yk-config ${YK_BUILD_TYPE} --ldflags` $(SYSLDFLAGS)
+LIBS=		`yk-config ${YK_BUILD_TYPE} --libs` -lm $(SYSLIBS)
+endif
+
 SYSCFLAGS=
 SYSLDFLAGS=
 SYSLIBS=

@@ -7,6 +7,10 @@
 #ifndef lstate_h
 #define lstate_h
 
+#ifdef USE_YK
+#include <yk.h>
+#endif
+
 #include "lua.h"
 
 
@@ -300,6 +304,9 @@ typedef struct global_State {
   TString *strcache[STRCACHE_N][STRCACHE_M];  /* cache for strings in API */
   lua_WarnFunction warnf;  /* warning function */
   void *ud_warn;         /* auxiliary data to 'warnf' */
+#ifdef USE_YK
+  YkMT *yk_mt;
+#endif
 } global_State;
 
 

@@ -15,6 +15,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#ifdef USE_YK
+#include <yk.h>
+#endif
 
 #include "lua.h"
 
@@ -1172,6 +1175,9 @@ void luaV_execute (lua_State *L, CallInfo *ci) {
   for (;;) {
     Instruction i;  /* instruction being executed */
     vmfetch();
+#ifdef USE_YK
+    yk_mt_control_point(G(L)->yk_mt, NULL);
+#endif
     #if 0
       /* low-level line tracing for debugging Lua */
       printf("line: %d\n", luaG_getfuncline(cl->p, pcRel(pc, cl->p)));
