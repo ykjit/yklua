@@ -12,6 +12,9 @@
 
 #include <limits.h>
 #include <string.h>
+#ifdef USE_YK
+#  include <yk.h>
+#endif
 
 #include "lua.h"
 
@@ -145,6 +148,12 @@ static void loadCode (LoadState *S, Proto *f) {
   int n = loadInt(S);
   f->code = luaM_newvectorchecked(S->L, n, Instruction);
   f->sizecode = n;
+#ifdef USE_YK
+  f->yklocs = luaM_newvectorchecked(S->L, n, YkLocation);
+  for (int i=0; i<n; i++)
+    f->yklocs[i] = yk_location_new();
+  f->sizeyklocs = n;
+#endif
   loadVector(S, f->code, n);
 }
 

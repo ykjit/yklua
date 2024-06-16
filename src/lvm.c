@@ -1176,7 +1176,10 @@ void luaV_execute (lua_State *L, CallInfo *ci) {
     Instruction i;  /* instruction being executed */
     vmfetch();
 #ifdef USE_YK
-    yk_mt_control_point(G(L)->yk_mt, NULL);
+    YkLocation *ykloc = NULL;
+    if (GET_OPCODE(i) == OP_FORLOOP || GET_OPCODE(i) == OP_TFORLOOP)
+      ykloc = &cl->p->yklocs[pc - cl->p->code];
+    yk_mt_control_point(G(L)->yk_mt, ykloc);
 #endif
     #if 0
       /* low-level line tracing for debugging Lua */

@@ -260,6 +260,10 @@ Proto *luaF_newproto (lua_State *L) {
   f->linedefined = 0;
   f->lastlinedefined = 0;
   f->source = NULL;
+#ifdef USE_YK
+  f->yklocs = NULL;
+  f->sizeyklocs = 0;
+#endif
   return f;
 }
 
@@ -272,6 +276,9 @@ void luaF_freeproto (lua_State *L, Proto *f) {
   luaM_freearray(L, f->abslineinfo, f->sizeabslineinfo);
   luaM_freearray(L, f->locvars, f->sizelocvars);
   luaM_freearray(L, f->upvalues, f->sizeupvalues);
+#ifdef USE_YK
+  luaM_freearray(L, f->yklocs, f->sizeyklocs);
+#endif
   luaM_free(L, f);
 }
 

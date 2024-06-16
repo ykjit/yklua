@@ -10,6 +10,9 @@
 
 
 #include <stdarg.h>
+#ifdef USE_YK
+#  include <yk.h>
+#endif
 
 
 #include "llimits.h"
@@ -565,6 +568,10 @@ typedef struct Proto {
   int lastlinedefined;  /* debug information  */
   TValue *k;  /* constants used by the function */
   Instruction *code;  /* opcodes */
+#ifdef USE_YK
+  YkLocation *yklocs; /* One 'YkLocation' per instruction in 'code' */
+  int sizeyklocs; /* size of 'yklocs' */
+#endif
   struct Proto **p;  /* functions defined inside the function */
   Upvaldesc *upvalues;  /* upvalue information */
   ls_byte *lineinfo;  /* information about source lines (debug information) */
