@@ -49,7 +49,8 @@ YKB_YKLLVM_BUILD_ARGS="define:CMAKE_C_COMPILER=/usr/bin/clang,define:CMAKE_CXX_C
 export PATH=`pwd`/bin:${PATH}
 cd ..
 
-YK_BUILD_TYPE=debug make -j `nproc`
+YKD_NEW_CODEGEN=1 YK_BUILD_TYPE=debug make -j `nproc`
 
 # Run the test suite
-cd tests && YKD_SERIALISE_COMPILATION=1 ../src/lua -e"_U=true" all.lua
+cd tests && YKD_NEW_CODEGEN=1 YKD_SERIALISE_COMPILATION=1 \
+    ../src/lua -e"_U=true" all.lua
