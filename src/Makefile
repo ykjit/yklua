@@ -6,8 +6,14 @@
 # Your platform. See PLATS for possible values.
 PLAT= guess
 
+# The optimisation flags to use.
+#
+# When building against the Yk JIT, this is passed in CFLAGS *and* LDFLAGS so
+# that it applies to both the pre-link and link-time pipelines.
+OPTFLAGS=-O1
+
 CC= gcc -std=gnu99
-CFLAGS= -O2 -Wall -Wextra -DLUA_COMPAT_5_3 $(SYSCFLAGS) $(MYCFLAGS)
+CFLAGS= ${OPTFLAGS} -Wall -Wextra -DLUA_COMPAT_5_3 $(SYSCFLAGS) $(MYCFLAGS)
 LDFLAGS= $(SYSLDFLAGS) $(MYLDFLAGS)
 LIBS= -lm $(SYSLIBS) $(MYLIBS)
 
@@ -20,9 +26,9 @@ ifneq ($(strip $(YK_BUILD_TYPE)),)
 CC=		`yk-config ${YK_BUILD_TYPE} --cc`
 AR=		`yk-config ${YK_BUILD_TYPE} --ar` rcu
 RANLIB=		`yk-config ${YK_BUILD_TYPE} --ranlib`
-CFLAGS=		`yk-config ${YK_BUILD_TYPE} --ao 1 --cflags --cppflags` -O0 -Wall -Wextra -DLUA_COMPAT_5_3 -DUSE_YK -DLUA_USE_JUMPTABLE=0
-LDFLAGS=	`yk-config ${YK_BUILD_TYPE} --ao 1 --ldflags` $(SYSLDFLAGS)
-LIBS=		`yk-config ${YK_BUILD_TYPE} --libs` -lm $(SYSLIBS)
+CFLAGS+=	`yk-config ${YK_BUILD_TYPE} --cflags --cppflags` -DUSE_YK -DLUA_USE_JUMPTABLE=0
+LDFLAGS+=	`yk-config ${YK_BUILD_TYPE} --ldflags` $(SYSLDFLAGS) ${OPTFLAGS}
+LIBS+=		`yk-config ${YK_BUILD_TYPE} --libs` -lm $(SYSLIBS)
 endif
 
 SYSCFLAGS=
