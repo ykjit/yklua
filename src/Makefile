@@ -10,7 +10,7 @@ PLAT= guess
 #
 # When building against the Yk JIT, this is passed in CFLAGS *and* LDFLAGS so
 # that it applies to both the pre-link and link-time pipelines.
-OPTFLAGS=-O1
+OPTFLAGS=-O2
 
 CC= gcc -std=gnu99
 CFLAGS= ${OPTFLAGS} -Wall -Wextra -DLUA_COMPAT_5_3 $(SYSCFLAGS) $(MYCFLAGS)
