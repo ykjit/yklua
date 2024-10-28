@@ -900,7 +900,22 @@ void luaV_finishOp (lua_State *L) {
 ** Arithmetic operations with immediate operands. 'iop' is the integer
 ** operation, 'fop' is the float operation.
 */
-#define op_arithI(L,iop,fop) {  \
+#ifdef USE_YK
+#  define op_arithI(L,iop,fop) {  \
+  StkId ra = RA(i); \
+  TValue *v1 = vRB(i);  \
+  int imm = yk_promote(GETARG_sC(i));  \
+  if (ttisinteger(v1)) {  \
+    lua_Integer iv1 = ivalue(v1);  \
+    pc++; setivalue(s2v(ra), iop(L, iv1, imm));  \
+  }  \
+  else if (ttisfloat(v1)) {  \
+    lua_Number nb = fltvalue(v1);  \
+    lua_Number fimm = cast_num(imm);  \
+    pc++; setfltvalue(s2v(ra), fop(L, nb, fimm)); \
+  }}
+#else
+#  define op_arithI(L,iop,fop) {  \
   StkId ra = RA(i); \
   TValue *v1 = vRB(i);  \
   int imm = GETARG_sC(i);  \
@@ -913,7 +928,7 @@ void luaV_finishOp (lua_State *L) {
     lua_Number fimm = cast_num(imm);  \
     pc++; setfltvalue(s2v(ra), fop(L, nb, fimm)); \
   }}
-
+#endif
 
 /*
 ** Auxiliary function for arithmetic operations over floats and others
@@ -1028,7 +1043,26 @@ void luaV_finishOp (lua_State *L) {
 ** Order operations with immediate operand. (Immediate operand is
 ** always small enough to have an exact representation as a float.)
 */
-#define op_orderI(L,opi,opf,inv,tm) {  \
+
+#ifdef USE_YK
+#  define op_orderI(L,opi,opf,inv,tm) {  \
+  StkId ra = RA(i); \
+  int cond;  \
+  int im = yk_promote(GETARG_sB(i));  \
+  if (ttisinteger(s2v(ra)))  \
+    cond = opi(ivalue(s2v(ra)), im);  \
+  else if (ttisfloat(s2v(ra))) {  \
+    lua_Number fa = fltvalue(s2v(ra));  \
+    lua_Number fim = cast_num(im);  \
+    cond = opf(fa, fim);  \
+  }  \
+  else {  \
+    int isf = GETARG_C(i);  \
+    Protect(cond = luaT_callorderiTM(L, s2v(ra), im, inv, isf, tm));  \
+  }  \
+  docondjump(); }
+#else
+#  define op_orderI(L,opi,opf,inv,tm) {  \
   StkId ra = RA(i); \
   int cond;  \
   int im = GETARG_sB(i);  \
@@ -1044,6 +1078,7 @@ void luaV_finishOp (lua_State *L) {
     Protect(cond = luaT_callorderiTM(L, s2v(ra), im, inv, isf, tm));  \
   }  \
   docondjump(); }
+#endif
 
 /* }================================================================== */
 
@@ -1531,7 +1566,11 @@ void luaV_execute (lua_State *L, CallInfo *ci) {
       vmcase(OP_MMBINI) {
         StkId ra = RA(i);
         Instruction pi = *(pc - 2);  /* original arith. expression */
+#ifdef USE_YK
+        int imm = yk_promote(GETARG_sB(i));
+#else
         int imm = GETARG_sB(i);
+#endif
         TMS tm = (TMS)GETARG_C(i);
         int flip = GETARG_k(i);
         StkId result = RA(pi);
@@ -1638,7 +1677,11 @@ void luaV_execute (lua_State *L, CallInfo *ci) {
       vmcase(OP_EQI) {
         StkId ra = RA(i);
         int cond;
+#ifdef USE_YK
+        int im = yk_promote(GETARG_sB(i));
+#else
         int im = GETARG_sB(i);
+#endif
         if (ttisinteger(s2v(ra)))
           cond = (ivalue(s2v(ra)) == im);
         else if (ttisfloat(s2v(ra)))
