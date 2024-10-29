@@ -1133,13 +1133,23 @@ void luaV_finishOp (lua_State *L) {
 
 
 /* fetch an instruction and prepare its execution */
-#define vmfetch()	{ \
+#ifdef USE_YK
+#  define vmfetch()	{ \
   if (l_unlikely(trap)) {  /* stack reallocation or hooks? */ \
     trap = luaG_traceexec(L, pc);  /* handle hooks */ \
     updatebase(ci);  /* correct stack */ \
   } \
-  i = *(pc++); \
+  i = (Instruction) yk_promote(*(pc++)); \
 }
+#else
+#  define vmfetch()	{ \
+  if (l_unlikely(trap)) {  /* stack reallocation or hooks? */ \
+    trap = luaG_traceexec(L, pc);  /* handle hooks */ \
+    updatebase(ci);  /* correct stack */ \
+  } \
+  i = (Instruction) *(pc++); \
+}
+#endif
 
 #define vmdispatch(o)	switch(o)
 #define vmcase(l)	case l:
