@@ -1223,7 +1223,7 @@ void luaV_execute (lua_State *L, CallInfo *ci) {
 #ifdef USE_YK
     YkLocation *ykloc = NULL;
     if (GET_OPCODE(i) == OP_FORLOOP || GET_OPCODE(i) == OP_TFORLOOP)
-      ykloc = &cl->p->yklocs[pc - cl->p->code];
+      ykloc = &cl->p->yklocs[pcRel(pc, cl->p)];
     yk_mt_control_point(G(L)->yk_mt, ykloc);
 #endif
     #if 0
