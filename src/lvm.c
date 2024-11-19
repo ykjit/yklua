@@ -1222,8 +1222,11 @@ void luaV_execute (lua_State *L, CallInfo *ci) {
     vmfetch();
 #ifdef USE_YK
     YkLocation *ykloc = NULL;
-    if (GET_OPCODE(i) == OP_FORLOOP || GET_OPCODE(i) == OP_TFORLOOP)
+    if ((GET_OPCODE(i) == OP_FORLOOP) ||
+        (GET_OPCODE(i) == OP_TFORLOOP) ||
+        ((GET_OPCODE(i) == OP_JMP) && (GETARG_sJ(i) < 0))) {
       ykloc = &cl->p->yklocs[pcRel(pc, cl->p)];
+    }
     yk_mt_control_point(G(L)->yk_mt, ykloc);
 #endif
     #if 0
