@@ -51,6 +51,11 @@ cd ..
 
 YKD_NEW_CODEGEN=1 YK_BUILD_TYPE=debug make -j `nproc`
 
-# Run the test suite
-cd tests && YKD_NEW_CODEGEN=1 YKD_SERIALISE_COMPILATION=1 \
-    ../src/lua -e"_U=true" all.lua
+# Run the bundled test suite.
+cd tests
+YKD_NEW_CODEGEN=1 YKD_SERIALISE_COMPILATION=1 ../src/lua -e"_U=true" all.lua
+cd ..
+
+# Run third-party test suites.
+cd third_party_tests
+YKD_SERIALISE_COMPILATION=1 sh run.sh ../src/lua
