@@ -24,6 +24,12 @@ export PATH=`pwd`/.cargo/bin/:$PATH
 git clone --depth 1 --recurse-submodules --shallow-submodules https://github.com/ykjit/yk
 cd yk
 echo "yk commit: $(git show -s --format=%H)"
+cat << EOF >> Cargo.toml
+[profile.release-with-asserts]
+inherits = "release"
+debug-assertions = true
+overflow-checks = true
+EOF
 
 cd ykllvm
 ykllvm_hash=$(git rev-parse HEAD)
@@ -45,11 +51,11 @@ fi
 cd ..
 
 YKB_YKLLVM_BUILD_ARGS="define:CMAKE_C_COMPILER=/usr/bin/clang,define:CMAKE_CXX_COMPILER=/usr/bin/clang++" \
-    cargo build
+    cargo build --profile release-with-asserts
 export PATH=`pwd`/bin:${PATH}
 cd ..
 
-YK_BUILD_TYPE=debug make -j `nproc`
+YK_BUILD_TYPE=release-with-asserts make -j `nproc`
 
 # Run the bundled test suite.
 cd tests
