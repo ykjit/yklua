@@ -31,7 +31,7 @@ make -j "$(nproc)"
 ### CI tests
 
 ```shell
-sh ./test.sh
+sh .buildbot.sh
 ```
 
 ### Other ways of running tests
