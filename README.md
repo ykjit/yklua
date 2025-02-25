@@ -28,14 +28,6 @@ make -j "$(nproc)"
 
 > Make sure to build the project first.
 
-### CI tests
-
-```shell
-sh ./test.sh
-```
-
-### Other ways of running tests
-
 ```shell
 cd tests # navigate to tests directory
 ../src/lua -e"_U=true" db.lua # run single file
