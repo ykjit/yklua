@@ -1169,12 +1169,23 @@ void luaV_finishOp (lua_State *L) {
 
 /* fetch an instruction and prepare its execution */
 #ifdef USE_YK
+// Elide instruction lookup.
+//
+// FIXME: return type should be `Instruction` not `uint64_t`. We only do this
+// because idempotent support isn't yet implemented for 32-bit return values.
+__attribute__((yk_idempotent))
+uint64_t yk_load_inst(const Instruction *pc) {
+  return *pc;
+}
+
 #  define vmfetch()	{ \
   if (l_unlikely(trap)) {  /* stack reallocation or hooks? */ \
     trap = luaG_traceexec(L, pc);  /* handle hooks */ \
     updatebase(ci);  /* correct stack */ \
   } \
-  i = (Instruction) yk_promote(*(pc++)); \
+  pc = (Instruction *) yk_promote((void *) pc); \
+  i = (Instruction) yk_load_inst(pc); \
+  pc++; \
 }
 #else
 #  define vmfetch()	{ \
