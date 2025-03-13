@@ -1170,11 +1170,8 @@ void luaV_finishOp (lua_State *L) {
 /* fetch an instruction and prepare its execution */
 #ifdef USE_YK
 // Elide instruction lookup.
-//
-// FIXME: return type should be `Instruction` not `uint64_t`. We only do this
-// because idempotent support isn't yet implemented for 32-bit return values.
 __attribute__((yk_idempotent))
-uint64_t yk_load_inst(const Instruction *pc) {
+Instruction yk_load_inst(const Instruction *pc) {
   return *pc;
 }
 
@@ -1184,7 +1181,7 @@ uint64_t yk_load_inst(const Instruction *pc) {
     updatebase(ci);  /* correct stack */ \
   } \
   pc = (Instruction *) yk_promote((void *) pc); \
-  i = (Instruction) yk_load_inst(pc); \
+  i = yk_load_inst(pc); \
   pc++; \
 }
 #else
