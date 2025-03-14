@@ -22,6 +22,9 @@
 #include "lobject.h"
 #include "lstate.h"
 
+#ifdef USE_YK
+uint64_t global_proto_version = 0;
+#endif
 
 
 CClosure *luaF_newCclosure (lua_State *L, int nupvals) {
@@ -263,12 +266,16 @@ Proto *luaF_newproto (lua_State *L) {
 #ifdef USE_YK
   f->yklocs = NULL;
   f->sizeyklocs = 0;
+  f->proto_version = global_proto_version;
 #endif
   return f;
 }
 
 
 void luaF_freeproto (lua_State *L, Proto *f) {
+#ifdef USE_YK
+  global_proto_version++;
+#endif
   luaM_freearray(L, f->code, f->sizecode);
   luaM_freearray(L, f->p, f->sizep);
   luaM_freearray(L, f->k, f->sizek);
