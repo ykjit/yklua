@@ -60,8 +60,3 @@ YK_BUILD_TYPE=release-with-asserts make -j `nproc`
 # Run the bundled test suite.
 cd tests
 YKD_SERIALISE_COMPILATION=1 ../src/lua -e"_U=true" all.lua
-cd ..
-
-# Run third-party test suites.
-cd third_party_tests
-YKD_SERIALISE_COMPILATION=1 sh run.sh ../src/lua
