@@ -1169,12 +1169,14 @@ void luaV_finishOp (lua_State *L) {
 
 /* fetch an instruction and prepare its execution */
 #ifdef USE_YK
+#define NOOPT_VAL(X) asm volatile("" : "+r,m"(X) : : "memory");
 // Elide instruction lookup.
 //
 // FIXME: return type should be `Instruction` not `uint64_t`. We only do this
 // because idempotent support isn't yet implemented for 32-bit return values.
 __attribute__((yk_idempotent))
-uint64_t yk_load_inst(const Instruction *pc) {
+uint64_t load_inst(uint64_t pv, const Instruction *pc) {
+  NOOPT_VAL(pv);
   return *pc;
 }
 
@@ -1184,7 +1186,8 @@ uint64_t yk_load_inst(const Instruction *pc) {
     updatebase(ci);  /* correct stack */ \
   } \
   pc = (Instruction *) yk_promote((void *) pc); \
-  i = (Instruction) yk_load_inst(pc); \
+  uint64_t pv = yk_promote(cl->p->proto_version); \
+  i = (Instruction) load_inst(pv, pc); \
   pc++; \
 }
 #else

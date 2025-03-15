@@ -571,6 +571,7 @@ typedef struct Proto {
 #ifdef USE_YK
   YkLocation *yklocs; /* One 'YkLocation' per instruction in 'code' */
   int sizeyklocs; /* size of 'yklocs' */
+  uint64_t proto_version; /* What 'Proto Version' was this created under? */
 #endif
   struct Proto **p;  /* functions defined inside the function */
   Upvaldesc *upvalues;  /* upvalue information */
