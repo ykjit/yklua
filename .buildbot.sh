@@ -63,5 +63,8 @@ YKD_SERIALISE_COMPILATION=1 ../src/lua -e"_U=true" all.lua
 cd ..
 
 # Run third-party test suites.
-cd third_party_tests
-YKD_SERIALISE_COMPILATION=1 sh run.sh ../src/lua
+git clone --recursive --shallow-submodules https://github.com/ykjit/yklua-tests
+cd yklua-tests
+git rev-parse HEAD # for the build logs.
+YKD_SERIALISE_COMPILATION=0 sh run.sh ${PWD}/../src/lua
+YKD_SERIALISE_COMPILATION=1 sh run.sh ${PWD}/../src/lua
