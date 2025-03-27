@@ -12,6 +12,10 @@
 
 #include <limits.h>
 #include <string.h>
+#ifdef USE_YK
+#include <stdio.h>
+#include <stdlib.h>
+#endif
 
 #include "lua.h"
 
@@ -28,6 +32,9 @@
 #include "lstring.h"
 #include "ltable.h"
 
+#ifdef USE_YK
+#include <yk.h>
+#endif
 
 
 /* maximum number of local variables per function (must be smaller
@@ -753,6 +760,89 @@ static void open_func (LexState *ls, FuncState *fs, BlockCnt *bl) {
 }
 
 #ifdef USE_YK
+/* Read line `n` out of the file at `filename` and put it in `line` */
+bool read_source_line(char line[], size_t len, const char *filename, int n) {
+  /* FIXME: not optimised in any way */
+  FILE *f = fopen(filename, "r");
+  if (f == NULL) {
+    return false;
+  }
+  for (; n != 0; n--) {
+    if (fgets(line, len, f) == NULL) {
+      return false;
+    }
+  }
+  if (fclose(f) == EOF) {
+    return false;
+  }
+  return true;
+}
+
+
+#define MAX_READ_SOURCELINE 128
+/*
+ * Get a Lua-level source line for use in a hot location debug string.
+ */
+bool luaG_get_hl_debug_str(Proto *p, int pc, char *into, size_t into_len) {
+  const char* filename = getstr(p->source);
+  if (filename[0] == '@') {
+    // Lua source code that can be found in a file.
+    filename++; // strip the leading '@'
+    int line_number = luaG_getfuncline(p, pc);
+    if (line_number != -1) {
+      /* We know the filename and the line number */
+      int off = snprintf(into, into_len, "%s:%d: ", filename, line_number);
+      if (off == -1) {
+        return false;
+      }
+      char srcl[MAX_READ_SOURCELINE];
+      bool ok = read_source_line(srcl, MAX_READ_SOURCELINE, filename, line_number);
+      if (!ok) {
+        return false;
+      }
+      char *srcl_strip = srcl;
+      /* strip leading whitespace */
+      for (; *srcl_strip == ' ' && *srcl_strip != '\t'; srcl_strip++);
+      /* strip trailing if present */
+      for (char *p = srcl_strip; *p != '\0'; p++) {
+        if ((*p == '\n') || (*p == '\r')) {
+          *p = '\0';
+          break;
+        }
+      }
+      if (snprintf(into + off, into_len - off, "%s", srcl_strip) == -1) {
+        return false;
+      }
+    } else {
+      /* We know the filename, but not the line number */
+      if (snprintf(into, into_len, "%s:?: ?", filename) == -1) {
+        return false;
+      }
+    }
+  } else {
+    /* Lua function loaded from a raw code string and with no debug info. */
+    if (snprintf(into, into_len, "?:?: ?") == -1) {
+      return false;
+    }
+  }
+  return true;
+}
+
+
+static void add_yk_location(Proto *f, int pc) {
+  YkLocation loc = yk_location_new();
+#ifdef YK_HL_DEBUG
+#define HL_DEBUG_STR_MAX 128
+  /* Add hot location debug info, if possible */
+  char dstr[HL_DEBUG_STR_MAX];
+  if (luaG_get_hl_debug_str(f, pc, dstr, HL_DEBUG_STR_MAX)) {
+    yk_location_set_debug_str(&loc, dstr);
+  }
+#endif
+  f->yklocs[pc] = loc;
+}
+
+
 /*
  * Identify loops in the function and insert yk locations there.
  *
@@ -774,10 +864,10 @@ void assign_yklocs(lua_State *L, Proto *f, int num_insts) {
      */
     if ((GET_OPCODE(i) == OP_JMP) && (GETARG_sJ(i) < 0)) {
       lua_assert(GETARG_sJ(i) + pc + 2 - 1 < pc);
-      f->yklocs[GETARG_sJ(i) + pc + 2 - 1] = yk_location_new();
+      add_yk_location(f, GETARG_sJ(i) + pc + 2 - 1);
     } else if (GET_OPCODE(i) == OP_FORLOOP) {
       lua_assert(pc - GETARG_Bx(i) + 2 - 1 < pc);
-      f->yklocs[pc - GETARG_Bx(i) + 2 - 1] = yk_location_new();
+      add_yk_location(f, pc - GETARG_Bx(i) + 2 - 1);
     }
   }
 }

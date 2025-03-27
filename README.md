@@ -15,6 +15,12 @@ export YK_BUILD_TYPE=<debug|release>
 make -j "$(nproc)"
 ```
 
+To build with hot location debug support, define the `YK_HL_DEBUG` preprocessor
+macro. You can do this when you invoke `make` like this:
+
+```shell
+make -j "$(nproc)" MYCFLAGS=-DYK_HL_DEBUG
+```
 
 ## Run
 
