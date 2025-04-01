@@ -25,6 +25,10 @@
 #include "lstate.h"
 #include "lundump.h"
 
+#ifdef USE_YK
+#include <yk.h>
+#endif
+
 static void PrintFunction(const Proto* f, int full);
 #define luaU_print	PrintFunction
 
@@ -349,6 +353,13 @@ static void PrintCode(const Proto* f)
   int sbx=GETARG_sBx(i);
   int isk=GETARG_k(i);
   int line=luaG_getfuncline(f,pc);
+#ifdef USE_YK
+  if (yk_location_is_null(f->yklocs[pc])) {
+    printf("      ");
+  } else {
+    printf("ykloc:");
+  }
+#endif
   printf("\t%d\t",pc+1);
   if (line>0) printf("[%d]\t",line); else printf("[-]\t");
   printf("%-9s\t",opnames[o]);

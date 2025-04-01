@@ -380,24 +380,13 @@ static void removelastinstruction (FuncState *fs) {
 ** line information. Return 'i' position.
 */
 int luaK_code (FuncState *fs, Instruction i) {
-  int pc;
   Proto *f = fs->f;
   /* put new instruction in code array */
   luaM_growvector(fs->ls->L, f->code, fs->pc, f->sizecode, Instruction,
                   MAX_INT, "opcodes");
-  pc = fs->pc++;
-  f->code[pc] = i;
-#ifdef USE_YK
-  luaM_growvector(fs->ls->L, f->yklocs, pc, f->sizeyklocs, YkLocation,
-                  MAX_INT, "yklocs");
-  f->yklocs[pc] = yk_location_null();
-  if ((GET_OPCODE(i) == OP_JMP) && (GETARG_sJ(i) < 0))
-    f->yklocs[pc + GETARG_sJ(i)] = yk_location_new();
-  if (GET_OPCODE(i) == OP_FORLOOP)
-    f->yklocs[pc - GETARG_Bx(i) - 2] = yk_location_new();
-#endif
+  f->code[fs->pc++] = i;
   savelineinfo(fs, f, fs->ls->lastline);
-  return pc;  /* index of new instruction */
+  return fs->pc - 1;  /* index of new instruction */
 }
 
 

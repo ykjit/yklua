@@ -771,6 +771,35 @@ static void close_func (LexState *ls) {
   luaM_shrinkvector(L, f->upvalues, f->sizeupvalues, fs->nups, Upvaldesc);
   ls->fs = fs->prev;
   luaC_checkGC(L);
+
+#ifdef USE_YK
+  /*
+   * Identify loops in the Lua program and insert yk locations there.
+   *
+   * We do this here (and not in, e.g. `luaK_code()`), to ensure that bytecode
+   * operands (required to find loop starts) have been finalised.
+   */
+  f->yklocs = luaM_newvectorchecked(L, fs->pc, YkLocation);
+  for (int pc = 0; pc < fs->pc; pc++) {
+    Instruction i = f->code[pc];
+    f->yklocs[pc] = yk_location_null();
+    /*
+     * The computations for finding the start of loops is derived from
+     * `PrintCode()` in `luac.c`. Note that we have to deduct one because luac
+     * prints bytecode pcs starting from 1.
+     *
+     * The assertions below check that inserting a null location will never
+     * overwrite a non-null location in a later iteration of this loop.
+     */
+    if ((GET_OPCODE(i) == OP_JMP) && (GETARG_sJ(i) < 0)) {
+      lua_assert(GETARG_sJ(i) + pc + 2 - 1 < pc);
+      f->yklocs[GETARG_sJ(i) + pc + 2 - 1] = yk_location_new();
+    } else if (GET_OPCODE(i) == OP_FORLOOP) {
+      lua_assert(pc - GETARG_Bx(i) + 2 - 1 < pc);
+      f->yklocs[pc - GETARG_Bx(i) + 2 - 1] = yk_location_new();
+    }
+  }
+#endif
 }
 
 
