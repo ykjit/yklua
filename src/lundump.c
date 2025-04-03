@@ -23,6 +23,9 @@
 #include "lfunc.h"
 #include "lmem.h"
 #include "lobject.h"
+#ifdef USE_YK
+#include "lparser.h"
+#endif
 #include "lstring.h"
 #include "lundump.h"
 #include "lzio.h"
@@ -148,13 +151,11 @@ static void loadCode (LoadState *S, Proto *f) {
   int n = loadInt(S);
   f->code = luaM_newvectorchecked(S->L, n, Instruction);
   f->sizecode = n;
-#ifdef USE_YK
-  f->yklocs = luaM_newvectorchecked(S->L, n, YkLocation);
-  for (int i=0; i<n; i++)
-    f->yklocs[i] = yk_location_new();
-  f->sizeyklocs = n;
-#endif
   loadVector(S, f->code, n);
+#ifdef USE_YK
+   /* FIXME: Ideally we'd persist the locations across a dump+undump too */
+  assign_yklocs(S->L, f, n);
+#endif
 }
 
 
