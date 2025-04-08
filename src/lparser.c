@@ -780,52 +780,61 @@ bool read_source_line(char line[], size_t len, const char *filename, int n) {
 
 
 #define MAX_READ_SOURCELINE 128
-/*
- * Get a Lua-level source line for use in a hot location debug string.
- */
-bool luaG_get_hl_debug_str(Proto *p, int pc, char *into, size_t into_len) {
-  const char* filename = getstr(p->source);
-  if (filename[0] == '@') {
-    // Lua source code that can be found in a file.
-    filename++; // strip the leading '@'
-    int line_number = luaG_getfuncline(p, pc);
-    if (line_number != -1) {
-      /* We know the filename and the line number */
-      int off = snprintf(into, into_len, "%s:%d: ", filename, line_number);
-      if (off == -1) {
-        return false;
-      }
-      char srcl[MAX_READ_SOURCELINE];
-      bool ok = read_source_line(srcl, MAX_READ_SOURCELINE, filename, line_number);
-      if (!ok) {
-        return false;
-      }
-      char *srcl_strip = srcl;
-      /* strip leading whitespace */
-      for (; *srcl_strip == ' ' && *srcl_strip != '\t'; srcl_strip++);
-      /* strip trailing if present */
-      for (char *p = srcl_strip; *p != '\0'; p++) {
-        if ((*p == '\n') || (*p == '\r')) {
-          *p = '\0';
-          break;
-        }
-      }
-      if (snprintf(into + off, into_len - off, "%s", srcl_strip) == -1) {
-        return false;
-      }
-    } else {
-      /* We know the filename, but not the line number */
-      if (snprintf(into, into_len, "%s:?: ?", filename) == -1) {
-        return false;
+bool luaG_format_hl_debug_str(char *filename, int line_number, char *into, size_t into_len) {
+  if (filename == NULL) {
+    /* We know nothing */
+    return false;
+  } else if (line_number != -1) {
+    /* We know the filename and the line number */
+    int off = snprintf(into, into_len, "%s:%d: ", filename, line_number);
+    if (off == -1) {
+      return false;
+    }
+    char srcl[MAX_READ_SOURCELINE];
+    bool ok = read_source_line(srcl, MAX_READ_SOURCELINE, filename, line_number);
+    if (!ok) {
+      return false;
+    }
+    char *srcl_strip = srcl;
+    /* strip leading whitespace */
+    for (; *srcl_strip == ' ' && *srcl_strip != '\t'; srcl_strip++);
+    /* strip trailing if present */
+    for (char *p = srcl_strip; *p != '\0'; p++) {
+      if ((*p == '\n') || (*p == '\r')) {
+        *p = '\0';
+        break;
       }
     }
+    if (snprintf(into + off, into_len - off, "%s", srcl_strip) == -1) {
+      return false;
+    }
   } else {
-    /* Lua function loaded from a raw code string and with no debug info. */
-    if (snprintf(into, into_len, "?:?: ?") == -1) {
+    /* We know the filename, but not the line number */
+    if (snprintf(into, into_len, "%s:?: ?", filename) == -1) {
       return false;
     }
   }
   return true;
+}
+
+
+/*
+ * Get a Lua-level source line for use in a hot location debug string.
+ *
+ * Returns `true` if we could get any debug info.
+ */
+bool luaG_get_hl_debug_str(Proto *p, int pc, char *into, size_t into_len) {
+  char *filename = NULL;
+  int line_number = -1;
+
+  if (p->source != NULL) {
+    filename = getstr(p->source);
+    if (filename[0] == '@') {
+      filename++; /* strip the leading '@' */
+      line_number = luaG_getfuncline(p, pc);
+    }
+  }
+  return luaG_format_hl_debug_str(filename, line_number, into, into_len);
 }
 
 
