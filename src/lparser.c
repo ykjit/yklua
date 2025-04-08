@@ -784,6 +784,9 @@ bool read_source_line(char line[], size_t len, const char *filename, int n) {
  * Get a Lua-level source line for use in a hot location debug string.
  */
 bool luaG_get_hl_debug_str(Proto *p, int pc, char *into, size_t into_len) {
+  if (p->source == NULL) {
+    return false;
+  }
   const char* filename = getstr(p->source);
   if (filename[0] == '@') {
     // Lua source code that can be found in a file.
