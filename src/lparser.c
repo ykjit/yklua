@@ -860,7 +860,9 @@ static void add_yk_location(Proto *f, int pc) {
  */
 void assign_yklocs(lua_State *L, Proto *f, int num_insts) {
   f->yklocs = luaM_newvectorchecked(L, num_insts, YkLocation);
-  for (int pc = 0; pc < num_insts; pc++) {
+  lua_assert(num_insts > 0);
+  add_yk_location(f, 0);
+  for (int pc = 1; pc < num_insts; pc++) {
     Instruction i = f->code[pc];
     f->yklocs[pc] = yk_location_null();
     /*
