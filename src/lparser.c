@@ -784,9 +784,19 @@ bool luaG_format_hl_debug_str(char *filename, int line_number, char *into, size_
   if (filename == NULL) {
     /* We know nothing */
     return false;
-  } else if (line_number != -1) {
+  }
+#if YK_HL_DEBUG == 2
+  char *leaf = strrchr(filename, '/');
+  if (leaf && strlen(leaf) > 0)
+    leaf++;
+  else
+    leaf = filename;
+#else
+  char *leaf = filename;
+#endif
+  if (line_number != -1) {
     /* We know the filename and the line number */
-    int off = snprintf(into, into_len, "%s:%d: ", filename, line_number);
+    int off = snprintf(into, into_len, "%s:%d: ", leaf, line_number);
     if (off == -1) {
       return false;
     }
@@ -810,7 +820,7 @@ bool luaG_format_hl_debug_str(char *filename, int line_number, char *into, size_
     }
   } else {
     /* We know the filename, but not the line number */
-    if (snprintf(into, into_len, "%s:?: ?", filename) == -1) {
+    if (snprintf(into, into_len, "%s:?: ?", leaf) == -1) {
       return false;
     }
   }
@@ -829,7 +839,7 @@ bool luaG_get_hl_debug_str(Proto *p, int pc, char *into, size_t into_len) {
 
   if (p->source != NULL) {
     filename = getstr(p->source);
-    if (filename[0] == '@') {
+    if (strlen(filename) > 0 && filename[0] == '@') {
       filename++; /* strip the leading '@' */
       line_number = luaG_getfuncline(p, pc);
     }
@@ -840,7 +850,7 @@ bool luaG_get_hl_debug_str(Proto *p, int pc, char *into, size_t into_len) {
 
 static void add_yk_location(Proto *f, int pc) {
   YkLocation loc = yk_location_new();
-#ifdef YK_HL_DEBUG
+#if defined(YK_HL_DEBUG)
 #define HL_DEBUG_STR_MAX 128
   /* Add hot location debug info, if possible */
   char dstr[HL_DEBUG_STR_MAX];
