@@ -22,6 +22,9 @@ macro. You can do this when you invoke `make` like this:
 make -j "$(nproc)" MYCFLAGS=-DYK_HL_DEBUG
 ```
 
+With an undefined value, or a value of `1`, `YK_HL_DEBUG` will put full path
+names into the debug output. To output only leaf names, set `-DYK_HL_DEBUG=2`.
+
 ## Run
 
 ```shell
