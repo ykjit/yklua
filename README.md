@@ -4,6 +4,7 @@ This is the reference Lua interpreter with the Yk JIT retrofitted.
 
 This is experimental!
 
+
 ## Build
 
 GNU make is required.
@@ -15,15 +16,16 @@ export YK_BUILD_TYPE=<debug|release>
 make -j "$(nproc)"
 ```
 
-To build with hot location debug support, define the `YK_HL_DEBUG` preprocessor
-macro. You can do this when you invoke `make` like this:
+To build with debug string support for both `HotLocation`s and per Lua
+`Instruction` in a trace, define the `YKLUA_DEBUG_STRS` preprocessor macro:
 
 ```shell
-make -j "$(nproc)" MYCFLAGS=-DYK_HL_DEBUG
+make -j "$(nproc)" MYCFLAGS=-DYKLUA_DEBUG_STRS
 ```
 
-With an undefined value, or a value of `1`, `YK_HL_DEBUG` will put full path
-names into the debug output. To output only leaf names, set `-DYK_HL_DEBUG=2`.
+With an unspecified value, or a value of `1`, `YKLUA_DEBUG_STRS` will put full path
+names into the debug output. To output only leaf names, set `-DYKLUA_DEBUG_STRS=2`.
+
 
 ## Run
 

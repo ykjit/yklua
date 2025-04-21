@@ -154,7 +154,7 @@ static void loadCode (LoadState *S, Proto *f) {
   loadVector(S, f->code, n);
 #ifdef USE_YK
    /* FIXME: Ideally we'd persist the locations across a dump+undump too */
-  assign_yklocs(S->L, f, n);
+  ykifyCode(S->L, f, n);
 #endif
 }
 
