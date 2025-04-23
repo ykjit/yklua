@@ -570,7 +570,10 @@ typedef struct Proto {
   Instruction *code;  /* opcodes */
 #ifdef USE_YK
   YkLocation *yklocs; /* One 'YkLocation' per instruction in 'code' */
-  int sizeyklocs; /* size of 'yklocs' */
+#ifdef YKLUA_DEBUG_STRS
+  char **instdebugstrs; /* One `char *` per instruction in `code` */
+#endif
+  int sizeyklocs; /* size of 'yklocs' and (if present) `instDebugStr` */
   uint64_t proto_version; /* What 'Proto Version' was this created under? */
 #endif
   struct Proto **p;  /* functions defined inside the function */

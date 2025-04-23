@@ -760,136 +760,102 @@ static void open_func (LexState *ls, FuncState *fs, BlockCnt *bl) {
 }
 
 #ifdef USE_YK
-/* Read line `n` out of the file at `filename` and put it in `line` */
-bool read_source_line(char line[], size_t len, const char *filename, int n) {
-  /* FIXME: not optimised in any way */
-  FILE *f = fopen(filename, "r");
-  if (f == NULL) {
-    return false;
-  }
-  for (; n != 0; n--) {
-    if (fgets(line, len, f) == NULL) {
-      return false;
-    }
-  }
-  if (fclose(f) == EOF) {
-    return false;
-  }
-  return true;
-}
-
-
-#define MAX_READ_SOURCELINE 128
-bool luaG_format_hl_debug_str(char *filename, int line_number, char *into, size_t into_len) {
-  if (filename == NULL) {
-    /* We know nothing */
-    return false;
-  }
-#if YK_HL_DEBUG == 2
-  char *leaf = strrchr(filename, '/');
-  if (leaf && strlen(leaf) > 0)
-    leaf++;
-  else
-    leaf = filename;
-#else
-  char *leaf = filename;
-#endif
-  if (line_number != -1) {
-    /* We know the filename and the line number */
-    int off = snprintf(into, into_len, "%s:%d: ", leaf, line_number);
-    if (off == -1) {
-      return false;
-    }
-    char srcl[MAX_READ_SOURCELINE];
-    bool ok = read_source_line(srcl, MAX_READ_SOURCELINE, filename, line_number);
-    if (!ok) {
-      return false;
-    }
-    char *srcl_strip = srcl;
-    /* strip leading whitespace */
-    for (; *srcl_strip == ' ' && *srcl_strip != '\t'; srcl_strip++);
-    /* strip trailing if present */
-    for (char *p = srcl_strip; *p != '\0'; p++) {
-      if ((*p == '\n') || (*p == '\r')) {
-        *p = '\0';
-        break;
-      }
-    }
-    if (snprintf(into + off, into_len - off, "%s", srcl_strip) == -1) {
-      return false;
-    }
-  } else {
-    /* We know the filename, but not the line number */
-    if (snprintf(into, into_len, "%s:?: ?", leaf) == -1) {
-      return false;
-    }
-  }
-  return true;
-}
-
+#include <libgen.h>
+#include "lopnames.h"
 
 /*
  * Get a Lua-level source line for use in a hot location debug string.
- *
- * Returns `true` if we could get any debug info.
  */
-bool luaG_get_hl_debug_str(Proto *p, int pc, char *into, size_t into_len) {
-  char *filename = NULL;
-  int line_number = -1;
-
-  if (p->source != NULL) {
-    filename = getstr(p->source);
-    if (strlen(filename) > 0 && filename[0] == '@') {
-      filename++; /* strip the leading '@' */
-      line_number = luaG_getfuncline(p, pc);
+char *luaG_ykdebug_str(Proto *f, int pc) {
+  char tmp[256];
+  Instruction i = f->code[pc];
+  const char *opcode = opnames[GET_OPCODE(i)];
+  if (f->source == NULL) {
+    if (snprintf(tmp, sizeof(tmp), "<unknown>:<unknown>:%s", opcode) < 0)
+      goto err;
+  } else {
+    char source[128];
+    if (snprintf(source, sizeof(source), "%.*s", (int) tsslen(f->source), getstr(f->source)) < 0)
+      goto err;
+    if (source[0] == '@') {
+      char *path = source + 1;
+#if YKLUA_DEBUG_STRS == 2
+      char *leaf = basename(path);
+#else
+      char *leaf = path;
+#endif
+      int line_number = luaG_getfuncline(f, pc);
+      if (line_number != -1) {
+        if (snprintf(tmp, sizeof(tmp), "%s:%d: %s", leaf, line_number, opcode) < 0) {
+          goto err;
+        }
+      } else {
+        if (snprintf(tmp, sizeof(tmp), "%s:<unknown>: %s", leaf, opcode) < 0)
+          goto err;
+      }
+    } else {
+      if (snprintf(tmp, sizeof(tmp), "%s:<unknown>: %s", source, opcode) < 0)
+        goto err;
     }
   }
-  return luaG_format_hl_debug_str(filename, line_number, into, into_len);
-}
+  char *dstr;
+  dstr = malloc(strlen(tmp) + 1);
+  lua_assert(dstr != NULL);
+  strcpy(dstr, tmp);
+  return dstr;
 
-
-static void add_yk_location(Proto *f, int pc) {
-  YkLocation loc = yk_location_new();
-#if defined(YK_HL_DEBUG)
-#define HL_DEBUG_STR_MAX 128
-  /* Add hot location debug info, if possible */
-  char dstr[HL_DEBUG_STR_MAX];
-  if (luaG_get_hl_debug_str(f, pc, dstr, HL_DEBUG_STR_MAX)) {
-    yk_location_set_debug_str(&loc, dstr);
-  }
-#endif
-  f->yklocs[pc] = loc;
+err:
+  dstr = malloc(1);
+  lua_assert(dstr != NULL);
+  dstr[0] = '\0';
+  return dstr;
 }
 
 
 /*
- * Identify loops in the function and insert yk locations there.
+ * Set the `Proto` `f` up for yk.
  *
- * This should only be called at a time when the bytecode instructions have
- * been properly finalised.
+ * This must only be called after bytecode instructions have been fully
+ * finalised.
  */
-void assign_yklocs(lua_State *L, Proto *f, int num_insts) {
+void ykifyCode(lua_State *L, Proto *f, int num_insts) {
   f->yklocs = luaM_newvectorchecked(L, num_insts, YkLocation);
+  f->sizeyklocs = num_insts;
+#ifdef YKLUA_DEBUG_STRS
+  f->instdebugstrs = luaM_newvectorchecked(L, num_insts, char *);
+#endif
   lua_assert(num_insts > 0);
-  add_yk_location(f, 0);
-  for (int pc = 1; pc < num_insts; pc++) {
-    Instruction i = f->code[pc];
+  for (int pc = 0; pc < num_insts; pc++) {
     f->yklocs[pc] = yk_location_null();
+    Instruction i = f->code[pc];
+#ifdef YKLUA_DEBUG_STRS
+    char *dstr = luaG_ykdebug_str(f, pc);
+    f->instdebugstrs[pc] = dstr;
+#endif
     /*
-     * The computations for finding the start of loops is derived from
-     * `PrintCode()` in `luac.c`. Note that we have to deduct one because luac
-     * prints bytecode pcs starting from 1.
-     *
-     * The assertions below check that inserting a null location will never
-     * overwrite a non-null location in a later iteration of this loop.
+     * The computation for finding the start of loops is derived from
+     * `PrintCode()` in `luac.c`.
      */
-    if ((GET_OPCODE(i) == OP_JMP) && (GETARG_sJ(i) < 0)) {
+    int loc_pc;
+    if (pc == 0) {
+      // We always add a ykloc to the first instruction.
+      loc_pc = 0;
+    } else if ((GET_OPCODE(i) == OP_JMP) && (GETARG_sJ(i) < 0)) {
       lua_assert(GETARG_sJ(i) + pc + 2 - 1 < pc);
-      add_yk_location(f, GETARG_sJ(i) + pc + 2 - 1);
+      loc_pc = GETARG_sJ(i) + pc + 2 - 1;
     } else if (GET_OPCODE(i) == OP_FORLOOP) {
       lua_assert(pc - GETARG_Bx(i) + 2 - 1 < pc);
-      add_yk_location(f, pc - GETARG_Bx(i) + 2 - 1);
+      loc_pc = pc - GETARG_Bx(i) + 2 - 1;
+    } else {
+      continue;
     }
+    YkLocation loc = yk_location_new();
+#if YKLUA_DEBUG_STRS
+    char *loc_dstr = luaG_ykdebug_str(f, loc_pc);
+    yk_location_set_debug_str(&loc, loc_dstr);
+    free(loc_dstr);
+#endif
+    f->yklocs[loc_pc] = loc;
   }
 }
 #endif
@@ -914,7 +880,7 @@ static void close_func (LexState *ls) {
   luaC_checkGC(L);
 
 #ifdef USE_YK
-  assign_yklocs(L, f, fs->pc);
+  ykifyCode(L, f, fs->pc);
 #endif
 }
 

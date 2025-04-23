@@ -167,7 +167,7 @@ LUAI_FUNC int luaY_nvarstack (FuncState *fs);
 LUAI_FUNC LClosure *luaY_parser (lua_State *L, ZIO *z, Mbuffer *buff,
                                  Dyndata *dyd, const char *name, int firstchar);
 #ifdef USE_YK
-LUAI_FUNC void assign_yklocs(lua_State *L, Proto *f, int num_insts);
+LUAI_FUNC void ykifyCode(lua_State *L, Proto *f, int num_insts);
 #endif
 
 

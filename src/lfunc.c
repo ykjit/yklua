@@ -265,12 +265,19 @@ Proto *luaF_newproto (lua_State *L) {
   f->source = NULL;
 #ifdef USE_YK
   f->yklocs = NULL;
+#ifdef YKLUA_DEBUG_STRS
+  f->instdebugstrs = NULL;
+#endif
   f->sizeyklocs = 0;
   f->proto_version = global_proto_version;
 #endif
   return f;
 }
 
+
+#ifdef USE_YK
+#include <stdlib.h>
+#endif
 
 void luaF_freeproto (lua_State *L, Proto *f) {
 #ifdef USE_YK
@@ -285,6 +292,11 @@ void luaF_freeproto (lua_State *L, Proto *f) {
   luaM_freearray(L, f->upvalues, f->sizeupvalues);
 #ifdef USE_YK
   luaM_freearray(L, f->yklocs, f->sizeyklocs);
+#ifdef YKLUA_DEBUG_STRS
+  for (int i = 0; i < f->sizeyklocs; i++)
+    free(f->instdebugstrs[i]);
+  luaM_freearray(L, f->instdebugstrs, f->sizeyklocs);
+#endif
 #endif
   luaM_free(L, f);
 }
