@@ -1183,7 +1183,7 @@ Instruction load_inst(uint64_t pv, const Instruction *pc) {
     updatebase(ci);  /* correct stack */ \
   } \
   pc = (Instruction *) yk_promote((void *) pc); \
-  uint64_t pv = yk_promote(cl->p->proto_version); \
+  uint64_t pv = yk_promote(cl_proto_version); \
   i = load_inst(pv, pc); \
   pc++; \
 }
@@ -1215,6 +1215,9 @@ void luaV_execute (lua_State *L, CallInfo *ci) {
   trap = L->hookmask;
  returning:  /* trap already set */
   cl = clLvalue(s2v(ci->func.p));
+#ifdef USE_YK
+  uint64_t cl_proto_version = cl->p->proto_version;
+#endif
   k = cl->p->k;
   pc = ci->u.l.savedpc;
   if (l_unlikely(trap)) {
