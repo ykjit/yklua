@@ -189,6 +189,20 @@ static int os_clock (lua_State *L) {
 }
 
 
+#include <sys/time.h>
+#include "llimits.h"
+static int os_monotonic (lua_State *L) {
+  struct timespec ts;
+  if (clock_gettime(CLOCK_MONOTONIC, &ts) == 0) {
+    double seconds = ts.tv_sec + ts.tv_nsec / 1e9;
+    lua_pushnumber(L, cast_num(seconds));
+    return 1;
+  } else {
+    exit(1);
+  }
+}
+
+
 /*
 ** {======================================================
 ** Time/Date operations
@@ -409,6 +423,7 @@ static const luaL_Reg syslib[] = {
   {"execute",   os_execute},
   {"exit",      os_exit},
   {"getenv",    os_getenv},
+  {"monotonic", os_monotonic},
   {"remove",    os_remove},
   {"rename",    os_rename},
   {"setlocale", os_setlocale},
