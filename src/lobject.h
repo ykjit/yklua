@@ -569,6 +569,13 @@ typedef struct Proto {
   TValue *k;  /* constants used by the function */
   Instruction *code;  /* opcodes */
 #ifdef USE_YK
+  /* Used to detect recursive function calls. When a function is
+   * called this is set to `true` and when we return it is set to `false`. This
+   * works because a recursive function call must detect the `true` case before
+   * the bit is flipped. In other words, `called` being `false` does not mean
+   * "this isn't a recursive call", but if it's `true` it definitely is a
+   * recursive call. */
+  bool called;
   YkLocation *yklocs; /* One 'YkLocation' per instruction in 'code' */
 #ifdef YKLUA_DEBUG_STRS
   char **instdebugstrs; /* One `char *` per instruction in `code` */

@@ -562,6 +562,18 @@ int luaD_pretailcall (lua_State *L, CallInfo *ci, StkId func,
         setnilvalue(s2v(func + narg1));  /* complete missing arguments */
       ci->top.p = func + 1 + fsize;  /* top for new function */
       lua_assert(ci->top.p <= L->stack_last.p);
+#ifdef USE_YK
+      // If this is a recursive call and we don't yet have a yk_location,
+      // create one now.
+      if (p->called && yk_location_is_null(p->yklocs[0])) {
+        p->yklocs[0] = yk_location_new();
+#if YKLUA_DEBUG_STRS
+        yk_location_set_debug_str(&p->yklocs[0], p->instdebugstrs[0]);
+#endif
+      } else if (!p->called) {
+        p->called = true;
+      }
+#endif
       ci->u.l.savedpc = p->code;  /* starting point */
       ci->callstatus |= CIST_TAIL;
       L->top.p = func + narg1;  /* set top */
@@ -606,6 +618,18 @@ CallInfo *luaD_precall (lua_State *L, StkId func, int nresults) {
       for (; narg < nfixparams; narg++)
         setnilvalue(s2v(L->top.p++));  /* complete missing arguments */
       lua_assert(ci->top.p <= L->stack_last.p);
+#ifdef USE_YK
+      // If this is a recursive call and we don't yet have a yk_location,
+      // create one now.
+      if (p->called && yk_location_is_null(p->yklocs[0])) {
+        p->yklocs[0] = yk_location_new();
+#if YKLUA_DEBUG_STRS
+        yk_location_set_debug_str(&p->yklocs[0], p->instdebugstrs[0]);
+#endif
+      } else if (!p->called) {
+        p->called = true;
+      }
+#endif
       return ci;
     }
     default: {  /* not a function */

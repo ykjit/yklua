@@ -264,6 +264,7 @@ Proto *luaF_newproto (lua_State *L) {
   f->lastlinedefined = 0;
   f->source = NULL;
 #ifdef USE_YK
+  f->called = false;
   f->yklocs = NULL;
 #ifdef YKLUA_DEBUG_STRS
   f->instdebugstrs = NULL;
