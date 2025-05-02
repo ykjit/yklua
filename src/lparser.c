@@ -832,15 +832,18 @@ void ykifyCode(lua_State *L, Proto *f, int num_insts) {
     char *dstr = luaG_ykdebug_str(f, pc);
     f->instdebugstrs[pc] = dstr;
 #endif
+    if (pc == 0) {
+      // We only insert locations for the start of functions when we
+      // dynamically detect that a function is definitely recursive. See
+      // luaD_precall.
+      continue;
+    }
     /*
      * The computation for finding the start of loops is derived from
      * `PrintCode()` in `luac.c`.
      */
     int loc_pc;
-    if (pc == 0) {
-      // We always add a ykloc to the first instruction.
-      loc_pc = 0;
-    } else if ((GET_OPCODE(i) == OP_JMP) && (GETARG_sJ(i) < 0)) {
+    if ((GET_OPCODE(i) == OP_JMP) && (GETARG_sJ(i) < 0)) {
       lua_assert(GETARG_sJ(i) + pc + 2 - 1 < pc);
       loc_pc = GETARG_sJ(i) + pc + 2 - 1;
     } else if (GET_OPCODE(i) == OP_FORLOOP) {
