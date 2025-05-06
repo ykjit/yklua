@@ -985,10 +985,22 @@ void luaV_finishOp (lua_State *L) {
 /*
 ** Arithmetic operations with K operands.
 */
+#ifdef USE_YK
+#define op_arithK(L,iop,fop) {  \
+  TValue *v1 = vRB(i);  \
+  TValue *v2 = KC(i); lua_assert(ttisnumber(v2));  \
+  StkId ra = RA(i); \
+  if (ttisinteger(v1) && ttisinteger(v2)) {  \
+    lua_Integer i1 = ivalue(v1); lua_Integer i2 = yk_promote(ivalue(v2));  \
+    pc++; setivalue(s2v(ra), iop(L, i1, i2));  \
+  }  \
+  else op_arithf_aux(L, v1, v2, fop); }
+#else
 #define op_arithK(L,iop,fop) {  \
   TValue *v1 = vRB(i);  \
   TValue *v2 = KC(i); lua_assert(ttisnumber(v2));  \
   op_arith_aux(L, v1, v2, iop, fop); }
+#endif
 
 
 /*
