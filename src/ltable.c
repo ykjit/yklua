@@ -477,13 +477,7 @@ static int numusehash (const Table *t, unsigned int *nums, unsigned int *pna) {
 ** comparison ensures that the shift in the second one does not
 ** overflow.
 */
-static void setnodevector (lua_State *L, Table *t, unsigned int size) {
-  if (size == 0) {  /* no elements to hash part? */
-    t->node = cast(Node *, dummynode);  /* use common 'dummynode' */
-    t->lsizenode = 0;
-    t->lastfree = NULL;  /* signal that it is using dummy node */
-  }
-  else {
+static void setnodevector_full (lua_State *L, Table *t, unsigned int size) {
     int i;
     int lsize = luaO_ceillog2(size);
     if (lsize > MAXHBITS || (1u << lsize) > MAXHSIZE)
@@ -498,6 +492,16 @@ static void setnodevector (lua_State *L, Table *t, unsigned int size) {
     }
     t->lsizenode = cast_byte(lsize);
     t->lastfree = gnode(t, size);  /* all positions are free */
+}
+
+static void setnodevector (lua_State *L, Table *t, unsigned int size) {
+  if (size == 0) {  /* no elements to hash part? */
+    t->node = cast(Node *, dummynode);  /* use common 'dummynode' */
+    t->lsizenode = 0;
+    t->lastfree = NULL;  /* signal that it is using dummy node */
+  }
+  else {
+    setnodevector_full(L, t, size);
   }
 }
 
