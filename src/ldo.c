@@ -430,9 +430,21 @@ StkId luaD_tryfuncTM (lua_State *L, StkId func) {
 ** expressions, multiple results for tail calls/single parameters)
 ** separated.
 */
-l_sinline void moveresults (lua_State *L, StkId res, int nres, int wanted) {
+l_sinline void moveresults_full (lua_State *L, StkId res, int nres, int wanted) {
   StkId firstresult;
   int i;
+  /* generic case */
+  firstresult = L->top.p - nres;  /* index of first result */
+  if (nres > wanted)  /* extra results? */
+    nres = wanted;  /* don't need them */
+  for (i = 0; i < nres; i++)  /* move all results to correct place */
+    setobjs2s(L, res + i, firstresult + i);
+  for (; i < wanted; i++)  /* complete wanted number of results */
+    setnilvalue(s2v(res + i));
+  L->top.p = res + wanted;  /* top points after the last result */
+}
+
+l_sinline void moveresults (lua_State *L, StkId res, int nres, int wanted) {
   switch (wanted) {  /* handle typical cases separately */
     case 0:  /* no values needed */
       L->top.p = res;
@@ -464,15 +476,7 @@ l_sinline void moveresults (lua_State *L, StkId res, int nres, int wanted) {
       }
       break;
   }
-  /* generic case */
-  firstresult = L->top.p - nres;  /* index of first result */
-  if (nres > wanted)  /* extra results? */
-    nres = wanted;  /* don't need them */
-  for (i = 0; i < nres; i++)  /* move all results to correct place */
-    setobjs2s(L, res + i, firstresult + i);
-  for (; i < wanted; i++)  /* complete wanted number of results */
-    setnilvalue(s2v(res + i));
-  L->top.p = res + wanted;  /* top points after the last result */
+  moveresults_full(L, res, nres, wanted);
 }
 
 
