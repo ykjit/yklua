@@ -1234,13 +1234,15 @@ void luaV_execute (lua_State *L, CallInfo *ci) {
   /* main loop of interpreter */
   for (;;) {
     Instruction i;  /* instruction being executed */
-#ifdef YKLUA_DEBUG_STRS
-    yk_debug_str(cl->p->instdebugstrs[cast_int(pc - cl->p->code)]);
-#endif
-    vmfetch();
 #ifdef USE_YK
-    YkLocation *ykloc = &cl->p->yklocs[pcRel(pc, cl->p)];
+    YkLocation *ykloc = &cl->p->yklocs[cast_int(pc - cl->p->code)];
     yk_mt_control_point(G(L)->yk_mt, ykloc);
+    vmfetch();
+#  ifdef YKLUA_DEBUG_STRS
+    yk_debug_str(cl->p->instdebugstrs[pcRel(pc, cl->p)]);
+#  endif
+#else
+    vmfetch();
 #endif
     #if 0
       /* low-level line tracing for debugging Lua */
