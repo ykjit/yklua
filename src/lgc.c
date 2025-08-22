@@ -1723,6 +1723,7 @@ static void fullinc (lua_State *L, global_State *g) {
 ** some operations which could change the interpreter state in some
 ** unexpected ways (running finalizers and shrinking some structures).
 */
+__attribute__((yk_outline))
 void luaC_fullgc (lua_State *L, int isemergency) {
   global_State *g = G(L);
   lua_assert(!g->gcemergency);
