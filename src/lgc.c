@@ -122,6 +122,7 @@ static void entersweep (lua_State *L);
 #define gnodelast(h)	gnode(h, cast_sizet(sizenode(h)))
 
 
+__attribute__((yk_outline))
 static GCObject **getgclist (GCObject *o) {
   switch (o->tt) {
     case LUA_VTABLE: return &gco2t(o)->gclist;
@@ -145,6 +146,7 @@ static GCObject **getgclist (GCObject *o) {
 */
 #define linkgclist(o,p)	linkgclist_(obj2gco(o), &(o)->gclist, &(p))
 
+__attribute__((yk_outline))
 static void linkgclist_ (GCObject *o, GCObject **pnext, GCObject **list) {
   lua_assert(!isgray(o));  /* cannot be in a gray list */
   *pnext = *list;
@@ -168,6 +170,7 @@ static void linkgclist_ (GCObject *o, GCObject **pnext, GCObject **list) {
 ** its associated empty value is enough to signal that the entry is
 ** logically empty.
 */
+__attribute__((yk_outline))
 static void clearkey (Node *n) {
   lua_assert(isempty(gval(n)));
   if (keyiscollectable(n))
@@ -182,6 +185,7 @@ static void clearkey (Node *n) {
 ** other objects: if really collected, cannot keep them; for objects
 ** being finalized, keep them in keys, but not in values
 */
+__attribute__((yk_outline))
 static int iscleared (global_State *g, const GCObject *o) {
   if (o == NULL) return 0;  /* non-collectable value */
   else if (novariant(o->tt) == LUA_TSTRING) {
@@ -205,6 +209,7 @@ static int iscleared (global_State *g, const GCObject *o) {
 ** be done is generational mode, as its sweep does not distinguish
 ** whites from deads.)
 */
+__attribute__((yk_outline))
 void luaC_barrier_ (lua_State *L, GCObject *o, GCObject *v) {
   global_State *g = G(L);
   lua_assert(isblack(o) && iswhite(v) && !isdead(g, v) && !isdead(g, o));
@@ -227,6 +232,7 @@ void luaC_barrier_ (lua_State *L, GCObject *o, GCObject *v) {
 ** barrier that moves collector backward, that is, mark the black object
 ** pointing to a white object as gray again.
 */
+__attribute__((yk_outline))
 void luaC_barrierback_ (lua_State *L, GCObject *o) {
   global_State *g = G(L);
   lua_assert(isblack(o) && !isdead(g, o));
@@ -240,6 +246,7 @@ void luaC_barrierback_ (lua_State *L, GCObject *o) {
 }
 
 
+__attribute__((yk_outline))
 void luaC_fix (lua_State *L, GCObject *o) {
   global_State *g = G(L);
   lua_assert(g->allgc == o);  /* object must be 1st in 'allgc' list! */
@@ -255,6 +262,7 @@ void luaC_fix (lua_State *L, GCObject *o) {
 ** create a new collectable object (with given type, size, and offset)
 ** and link it to 'allgc' list.
 */
+__attribute__((yk_outline))
 GCObject *luaC_newobjdt (lua_State *L, int tt, size_t sz, size_t offset) {
   global_State *g = G(L);
   char *p = cast_charp(luaM_newobject(L, novariant(tt), sz));
@@ -267,6 +275,7 @@ GCObject *luaC_newobjdt (lua_State *L, int tt, size_t sz, size_t offset) {
 }
 
 
+__attribute__((yk_outline))
 GCObject *luaC_newobj (lua_State *L, int tt, size_t sz) {
   return luaC_newobjdt(L, tt, sz, 0);
 }
@@ -294,6 +303,7 @@ GCObject *luaC_newobj (lua_State *L, int tt, size_t sz) {
 ** for at most two levels: An upvalue cannot refer to another upvalue
 ** (only closures can), and a userdata's metatable must be a table.
 */
+__attribute__((yk_outline))
 static void reallymarkobject (global_State *g, GCObject *o) {
   switch (o->tt) {
     case LUA_VSHRSTR:
@@ -332,6 +342,7 @@ static void reallymarkobject (global_State *g, GCObject *o) {
 /*
 ** mark metamethods for basic types
 */
+__attribute__((yk_outline))
 static void markmt (global_State *g) {
   int i;
   for (i=0; i < LUA_NUMTAGS; i++)
@@ -342,6 +353,7 @@ static void markmt (global_State *g) {
 /*
 ** mark all objects in list of being-finalized
 */
+__attribute__((yk_outline))
 static lu_mem markbeingfnz (global_State *g) {
   GCObject *o;
   lu_mem count = 0;
@@ -364,6 +376,7 @@ static lu_mem markbeingfnz (global_State *g) {
 ** upvalues, as they have nothing to be checked. (If the thread gets an
 ** upvalue later, it will be linked in the list again.)
 */
+__attribute__((yk_outline))
 static int remarkupvals (global_State *g) {
   lua_State *thread;
   lua_State **p = &g->twups;
@@ -391,6 +404,7 @@ static int remarkupvals (global_State *g) {
 }
 
 
+__attribute__((yk_outline))
 static void cleargraylists (global_State *g) {
   g->gray = g->grayagain = NULL;
   g->weak = g->allweak = g->ephemeron = NULL;
@@ -400,6 +414,7 @@ static void cleargraylists (global_State *g) {
 /*
 ** mark root set and reset all gray lists, to start a new collection
 */
+__attribute__((yk_outline))
 static void restartcollection (global_State *g) {
   cleargraylists(g);
   markobject(g, g->mainthread);
@@ -427,6 +442,7 @@ static void restartcollection (global_State *g) {
 ** back to a gray list, but then it must become OLD. (That is what
 ** 'correctgraylist' does when it finds a TOUCHED2 object.)
 */
+__attribute__((yk_outline))
 static void genlink (global_State *g, GCObject *o) {
   lua_assert(isblack(o));
   if (getage(o) == G_TOUCHED1) {  /* touched in this cycle? */
@@ -443,6 +459,7 @@ static void genlink (global_State *g, GCObject *o) {
 ** atomic phase. In the atomic phase, if table has any white value,
 ** put it in 'weak' list, to be cleared.
 */
+__attribute__((yk_outline))
 static void traverseweakvalue (global_State *g, Table *h) {
   Node *n, *limit = gnodelast(h);
   /* if there is array part, assume it may have white values (it is not
@@ -477,6 +494,7 @@ static void traverseweakvalue (global_State *g, Table *h) {
 ** must be kept in some gray list for post-processing; this is done
 ** by 'genlink'.
 */
+__attribute__((yk_outline))
 static int traverseephemeron (global_State *g, Table *h, int inv) {
   int marked = 0;  /* true if an object is marked in this traversal */
   int hasclears = 0;  /* true if table has white keys */
@@ -520,6 +538,7 @@ static int traverseephemeron (global_State *g, Table *h, int inv) {
 }
 
 
+__attribute__((yk_outline))
 static void traversestrongtable (global_State *g, Table *h) {
   Node *n, *limit = gnodelast(h);
   unsigned int i;
@@ -539,6 +558,7 @@ static void traversestrongtable (global_State *g, Table *h) {
 }
 
 
+__attribute__((yk_outline))
 static lu_mem traversetable (global_State *g, Table *h) {
   const char *weakkey, *weakvalue;
   const TValue *mode = gfasttm(g, h->metatable, TM_MODE);
@@ -560,6 +580,7 @@ static lu_mem traversetable (global_State *g, Table *h) {
 }
 
 
+__attribute__((yk_outline))
 static int traverseudata (global_State *g, Udata *u) {
   int i;
   markobjectN(g, u->metatable);  /* mark its metatable */
@@ -575,6 +596,7 @@ static int traverseudata (global_State *g, Udata *u) {
 ** arrays can be larger than needed; the extra slots are filled with
 ** NULL, so the use of 'markobjectN')
 */
+__attribute__((yk_outline))
 static int traverseproto (global_State *g, Proto *f) {
   int i;
   markobjectN(g, f->source);
@@ -590,6 +612,7 @@ static int traverseproto (global_State *g, Proto *f) {
 }
 
 
+__attribute__((yk_outline))
 static int traverseCclosure (global_State *g, CClosure *cl) {
   int i;
   for (i = 0; i < cl->nupvalues; i++)  /* mark its upvalues */
@@ -601,6 +624,7 @@ static int traverseCclosure (global_State *g, CClosure *cl) {
 ** Traverse a Lua closure, marking its prototype and its upvalues.
 ** (Both can be NULL while closure is being created.)
 */
+__attribute__((yk_outline))
 static int traverseLclosure (global_State *g, LClosure *cl) {
   int i;
   markobjectN(g, cl->p);  /* mark its prototype */
@@ -624,6 +648,7 @@ static int traverseLclosure (global_State *g, LClosure *cl) {
 ** (which can only happen in generational mode) or if the traverse is in
 ** the propagate phase (which can only happen in incremental mode).
 */
+__attribute__((yk_outline))
 static int traversethread (global_State *g, lua_State *th) {
   UpVal *uv;
   StkId o = th->stack.p;
@@ -655,6 +680,7 @@ static int traversethread (global_State *g, lua_State *th) {
 /*
 ** traverse one gray object, turning it to black.
 */
+__attribute__((yk_outline))
 static lu_mem propagatemark (global_State *g) {
   GCObject *o = g->gray;
   nw2black(o);
@@ -671,6 +697,7 @@ static lu_mem propagatemark (global_State *g) {
 }
 
 
+__attribute__((yk_outline))
 static lu_mem propagateall (global_State *g) {
   lu_mem tot = 0;
   while (g->gray)
@@ -686,6 +713,7 @@ static lu_mem propagateall (global_State *g) {
 ** convergence on chains in the same table.
 **
 */
+__attribute__((yk_outline))
 static void convergeephemerons (global_State *g) {
   int changed;
   int dir = 0;
@@ -720,6 +748,7 @@ static void convergeephemerons (global_State *g) {
 /*
 ** clear entries with unmarked keys from all weaktables in list 'l'
 */
+__attribute__((yk_outline))
 static void clearbykeys (global_State *g, GCObject *l) {
   for (; l; l = gco2t(l)->gclist) {
     Table *h = gco2t(l);
@@ -739,6 +768,7 @@ static void clearbykeys (global_State *g, GCObject *l) {
 ** clear entries with unmarked values from all weaktables in list 'l' up
 ** to element 'f'
 */
+__attribute__((yk_outline))
 static void clearbyvalues (global_State *g, GCObject *l, GCObject *f) {
   for (; l != f; l = gco2t(l)->gclist) {
     Table *h = gco2t(l);
@@ -760,6 +790,7 @@ static void clearbyvalues (global_State *g, GCObject *l, GCObject *f) {
 }
 
 
+__attribute__((yk_outline))
 static void freeupval (lua_State *L, UpVal *uv) {
   if (upisopen(uv))
     luaF_unlinkupval(uv);
@@ -767,6 +798,7 @@ static void freeupval (lua_State *L, UpVal *uv) {
 }
 
 
+__attribute__((yk_outline))
 static void freeobj (lua_State *L, GCObject *o) {
   switch (o->tt) {
     case LUA_VPROTO:
@@ -819,6 +851,7 @@ static void freeobj (lua_State *L, GCObject *o) {
 ** collection cycle. Return where to continue the traversal or NULL if
 ** list is finished. ('*countout' gets the number of elements traversed.)
 */
+__attribute__((yk_outline))
 static GCObject **sweeplist (lua_State *L, GCObject **p, int countin,
                              int *countout) {
   global_State *g = G(L);
@@ -846,6 +879,7 @@ static GCObject **sweeplist (lua_State *L, GCObject **p, int countin,
 /*
 ** sweep a list until a live object (or end of list)
 */
+__attribute__((yk_outline))
 static GCObject **sweeptolive (lua_State *L, GCObject **p) {
   GCObject **old = p;
   do {
@@ -866,6 +900,7 @@ static GCObject **sweeptolive (lua_State *L, GCObject **p) {
 /*
 ** If possible, shrink string table.
 */
+__attribute__((yk_outline))
 static void checkSizes (lua_State *L, global_State *g) {
   if (!g->gcemergency) {
     if (g->strt.nuse < g->strt.size / 4) {  /* string table too big? */
@@ -881,6 +916,7 @@ static void checkSizes (lua_State *L, global_State *g) {
 ** Get the next udata to be finalized from the 'tobefnz' list, and
 ** link it back into the 'allgc' list.
 */
+__attribute__((yk_outline))
 static GCObject *udata2finalize (global_State *g) {
   GCObject *o = g->tobefnz;  /* get first element */
   lua_assert(tofinalize(o));
@@ -896,12 +932,14 @@ static GCObject *udata2finalize (global_State *g) {
 }
 
 
+__attribute__((yk_outline))
 static void dothecall (lua_State *L, void *ud) {
   UNUSED(ud);
   luaD_callnoyield(L, L->top.p - 2, 0);
 }
 
 
+__attribute__((yk_outline))
 static void GCTM (lua_State *L) {
   global_State *g = G(L);
   const TValue *tm;
@@ -933,6 +971,7 @@ static void GCTM (lua_State *L) {
 /*
 ** Call a few finalizers
 */
+__attribute__((yk_outline))
 static int runafewfinalizers (lua_State *L, int n) {
   global_State *g = G(L);
   int i;
@@ -945,6 +984,7 @@ static int runafewfinalizers (lua_State *L, int n) {
 /*
 ** call all pending finalizers
 */
+__attribute__((yk_outline))
 static void callallpendingfinalizers (lua_State *L) {
   global_State *g = G(L);
   while (g->tobefnz)
@@ -955,6 +995,7 @@ static void callallpendingfinalizers (lua_State *L) {
 /*
 ** find last 'next' field in list 'p' list (to add elements in its end)
 */
+__attribute__((yk_outline))
 static GCObject **findlast (GCObject **p) {
   while (*p != NULL)
     p = &(*p)->next;
@@ -969,6 +1010,7 @@ static GCObject **findlast (GCObject **p) {
 ** don't need to be traversed. In incremental mode, 'finobjold1' is NULL,
 ** so the whole list is traversed.)
 */
+__attribute__((yk_outline))
 static void separatetobefnz (global_State *g, int all) {
   GCObject *curr;
   GCObject **p = &g->finobj;
@@ -992,6 +1034,7 @@ static void separatetobefnz (global_State *g, int all) {
 /*
 ** If pointer 'p' points to 'o', move it to the next element.
 */
+__attribute__((yk_outline))
 static void checkpointer (GCObject **p, GCObject *o) {
   if (o == *p)
     *p = o->next;
@@ -1002,6 +1045,7 @@ static void checkpointer (GCObject **p, GCObject *o) {
 ** Correct pointers to objects inside 'allgc' list when
 ** object 'o' is being removed from the list.
 */
+__attribute__((yk_outline))
 static void correctpointers (global_State *g, GCObject *o) {
   checkpointer(&g->survival, o);
   checkpointer(&g->old1, o);
@@ -1014,6 +1058,7 @@ static void correctpointers (global_State *g, GCObject *o) {
 ** if object 'o' has a finalizer, remove it from 'allgc' list (must
 ** search the list to find it) and link it in 'finobj' list.
 */
+__attribute__((yk_outline))
 void luaC_checkfinalizer (lua_State *L, GCObject *o, Table *mt) {
   global_State *g = G(L);
   if (tofinalize(o) ||                 /* obj. is already marked... */
@@ -1054,6 +1099,7 @@ void luaC_checkfinalizer (lua_State *L, GCObject *o, Table *mt) {
 ** PAUSEADJ). (Division by 'estimate' should be OK: it cannot be zero,
 ** because Lua cannot even start with less than PAUSEADJ bytes).
 */
+__attribute__((yk_outline))
 static void setpause (global_State *g) {
   l_mem threshold, debt;
   int pause = getgcparam(g->gcpause);
@@ -1074,6 +1120,7 @@ static void setpause (global_State *g) {
 ** are now old---must be in a gray list. Everything else is not in a
 ** gray list. Open upvalues are also kept gray.
 */
+__attribute__((yk_outline))
 static void sweep2old (lua_State *L, GCObject **p) {
   GCObject *curr;
   global_State *g = G(L);
@@ -1110,6 +1157,7 @@ static void sweep2old (lua_State *L, GCObject **p) {
 ** here.  They will all be advanced in 'correctgraylist'. That function
 ** will also remove objects turned white here from any gray list.
 */
+__attribute__((yk_outline))
 static GCObject **sweepgen (lua_State *L, global_State *g, GCObject **p,
                             GCObject *limit, GCObject **pfirstold1) {
   static const lu_byte nextage[] = {
@@ -1151,6 +1199,7 @@ static GCObject **sweepgen (lua_State *L, global_State *g, GCObject **p,
 ** age. In incremental mode, all objects are 'new' all the time,
 ** except for fixed strings (which are always old).
 */
+__attribute__((yk_outline))
 static void whitelist (global_State *g, GCObject *p) {
   int white = luaC_white(g);
   for (; p != NULL; p = p->next)
@@ -1167,6 +1216,7 @@ static void whitelist (global_State *g, GCObject *p) {
 ** Non-white threads also remain on the list; 'TOUCHED2' objects become
 ** regular old; they and anything else are removed from the list.
 */
+__attribute__((yk_outline))
 static GCObject **correctgraylist (GCObject **p) {
   GCObject *curr;
   while ((curr = *p) != NULL) {
@@ -1200,6 +1250,7 @@ static GCObject **correctgraylist (GCObject **p) {
 /*
 ** Correct all gray lists, coalescing them into 'grayagain'.
 */
+__attribute__((yk_outline))
 static void correctgraylists (global_State *g) {
   GCObject **list = correctgraylist(&g->grayagain);
   *list = g->weak; g->weak = NULL;
@@ -1216,6 +1267,7 @@ static void correctgraylists (global_State *g) {
 ** Gray objects are already in some gray list, and so will be visited
 ** in the atomic step.
 */
+__attribute__((yk_outline))
 static void markold (global_State *g, GCObject *from, GCObject *to) {
   GCObject *p;
   for (p = from; p != to; p = p->next) {
@@ -1232,6 +1284,7 @@ static void markold (global_State *g, GCObject *from, GCObject *to) {
 /*
 ** Finish a young-generation collection.
 */
+__attribute__((yk_outline))
 static void finishgencycle (lua_State *L, global_State *g) {
   correctgraylists(g);
   checkSizes(L, g);
@@ -1246,6 +1299,7 @@ static void finishgencycle (lua_State *L, global_State *g) {
 ** atomic step. Then, sweep all lists and advance pointers. Finally,
 ** finish the collection.
 */
+__attribute__((yk_outline))
 static void youngcollection (lua_State *L, global_State *g) {
   GCObject **psurvival;  /* to point to first non-dead survival object */
   GCObject *dummy;  /* dummy out parameter to 'sweepgen' */
@@ -1287,6 +1341,7 @@ static void youngcollection (lua_State *L, global_State *g) {
 ** surviving objects to old. Threads go back to 'grayagain'; everything
 ** else is turned black (not in any gray list).
 */
+__attribute__((yk_outline))
 static void atomic2gen (lua_State *L, global_State *g) {
   cleargraylists(g);
   /* sweep all elements making them old */
@@ -1313,6 +1368,7 @@ static void atomic2gen (lua_State *L, global_State *g) {
 ** Set debt for the next minor collection, which will happen when
 ** memory grows 'genminormul'%.
 */
+__attribute__((yk_outline))
 static void setminordebt (global_State *g) {
   luaE_setdebt(g, -(cast(l_mem, (gettotalbytes(g) / 100)) * g->genminormul));
 }
@@ -1324,6 +1380,7 @@ static void setminordebt (global_State *g) {
 ** are cleared. Then, turn all objects into old and finishes the
 ** collection.
 */
+__attribute__((yk_outline))
 static lu_mem entergen (lua_State *L, global_State *g) {
   lu_mem numobjs;
   luaC_runtilstate(L, bitmask(GCSpause));  /* prepare to start a new cycle */
@@ -1340,6 +1397,7 @@ static lu_mem entergen (lua_State *L, global_State *g) {
 ** intermediate lists point to NULL (to avoid invalid pointers),
 ** and go to the pause state.
 */
+__attribute__((yk_outline))
 static void enterinc (global_State *g) {
   whitelist(g, g->allgc);
   g->reallyold = g->old1 = g->survival = NULL;
@@ -1355,6 +1413,7 @@ static void enterinc (global_State *g) {
 /*
 ** Change collector mode to 'newmode'.
 */
+__attribute__((yk_outline))
 void luaC_changemode (lua_State *L, int newmode) {
   global_State *g = G(L);
   if (newmode != g->gckind) {
@@ -1370,6 +1429,7 @@ void luaC_changemode (lua_State *L, int newmode) {
 /*
 ** Does a full collection in generational mode.
 */
+__attribute__((yk_outline))
 static lu_mem fullgen (lua_State *L, global_State *g) {
   enterinc(g);
   return entergen(L, g);
@@ -1397,6 +1457,7 @@ static lu_mem fullgen (lua_State *L, global_State *g) {
 ** field 'g->lastatomic' keeps this count from the last collection.
 ** ('g->lastatomic != 0' also means that the last collection was bad.)
 */
+__attribute__((yk_outline))
 static void stepgenfull (lua_State *L, global_State *g) {
   lu_mem newatomic;  /* count of traversed objects */
   lu_mem lastatomic = g->lastatomic;  /* count from last collection */
@@ -1437,6 +1498,7 @@ static void stepgenfull (lua_State *L, global_State *g) {
 ** 'GCdebt <= 0' means an explicit call to GC step with "size" zero;
 ** in that case, do a minor collection.
 */
+__attribute__((yk_outline))
 static void genstep (lua_State *L, global_State *g) {
   if (g->lastatomic != 0)  /* last collection was a bad one? */
     stepgenfull(L, g);  /* do a full step */
@@ -1481,6 +1543,7 @@ static void genstep (lua_State *L, global_State *g) {
 ** not need to skip objects created between "now" and the start of the
 ** real sweep.
 */
+__attribute__((yk_outline))
 static void entersweep (lua_State *L) {
   global_State *g = G(L);
   g->gcstate = GCSswpallgc;
@@ -1493,6 +1556,7 @@ static void entersweep (lua_State *L) {
 ** Delete all objects in list 'p' until (but not including) object
 ** 'limit'.
 */
+__attribute__((yk_outline))
 static void deletelist (lua_State *L, GCObject *p, GCObject *limit) {
   while (p != limit) {
     GCObject *next = p->next;
@@ -1506,6 +1570,7 @@ static void deletelist (lua_State *L, GCObject *p, GCObject *limit) {
 ** Call all finalizers of the objects in the given Lua state, and
 ** then free all objects, except for the main thread.
 */
+__attribute__((yk_outline))
 void luaC_freeallobjects (lua_State *L) {
   global_State *g = G(L);
   g->gcstp = GCSTPCLS;  /* no extra finalizers after here */
@@ -1520,6 +1585,7 @@ void luaC_freeallobjects (lua_State *L) {
 }
 
 
+__attribute__((yk_outline))
 static lu_mem atomic (lua_State *L) {
   global_State *g = G(L);
   lu_mem work = 0;
@@ -1563,6 +1629,7 @@ static lu_mem atomic (lua_State *L) {
 }
 
 
+__attribute__((yk_outline))
 static int sweepstep (lua_State *L, global_State *g,
                       int nextstate, GCObject **nextlist) {
   if (g->sweepgc) {
@@ -1580,6 +1647,7 @@ static int sweepstep (lua_State *L, global_State *g,
 }
 
 
+__attribute__((yk_outline))
 static lu_mem singlestep (lua_State *L) {
   global_State *g = G(L);
   lu_mem work;
@@ -1647,6 +1715,7 @@ static lu_mem singlestep (lua_State *L) {
 ** advances the garbage collector until it reaches a state allowed
 ** by 'statemask'
 */
+__attribute__((yk_outline))
 void luaC_runtilstate (lua_State *L, int statesmask) {
   global_State *g = G(L);
   while (!testbit(statesmask, g->gcstate))
@@ -1662,6 +1731,7 @@ void luaC_runtilstate (lua_State *L, int statesmask) {
 ** finishing a cycle (pause state). Finally, it sets the debt that
 ** controls when next step will be performed.
 */
+__attribute__((yk_outline))
 static void incstep (lua_State *L, global_State *g) {
   int stepmul = (getgcparam(g->gcstepmul) | 1);  /* avoid division by 0 */
   l_mem debt = (g->GCdebt / WORK2MEM) * stepmul;
@@ -1685,6 +1755,7 @@ static void incstep (lua_State *L, global_State *g) {
 ** not running, set a reasonable debt to avoid it being called at
 ** every single check.)
 */
+__attribute__((yk_outline))
 void luaC_step (lua_State *L) {
   global_State *g = G(L);
   if (!gcrunning(g))  /* not running? */
@@ -1705,6 +1776,7 @@ void luaC_step (lua_State *L) {
 ** to sweep all objects to turn them back to white (as white has not
 ** changed, nothing will be collected).
 */
+__attribute__((yk_outline))
 static void fullinc (lua_State *L, global_State *g) {
   if (keepinvariant(g))  /* black objects? */
     entersweep(L); /* sweep everything to turn them back to white */
