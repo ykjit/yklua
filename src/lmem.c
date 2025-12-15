@@ -94,6 +94,7 @@ static void *firsttry (global_State *g, void *block, size_t os, size_t ns) {
 #define MINSIZEARRAY	4
 
 
+__attribute__((yk_outline))
 void *luaM_growaux_ (lua_State *L, void *block, int nelems, int *psize,
                      int size_elems, int limit, const char *what) {
   void *newblock;
@@ -147,6 +148,7 @@ l_noret luaM_toobig (lua_State *L) {
 /*
 ** Free memory
 */
+__attribute__((yk_outline))
 void luaM_free_ (lua_State *L, void *block, size_t osize) {
   global_State *g = G(L);
   lua_assert((osize == 0) == (block == NULL));
@@ -174,6 +176,7 @@ static void *tryagain (lua_State *L, void *block,
 /*
 ** Generic allocation routine.
 */
+__attribute__((yk_outline))
 void *luaM_realloc_ (lua_State *L, void *block, size_t osize, size_t nsize) {
   void *newblock;
   global_State *g = G(L);
@@ -190,6 +193,7 @@ void *luaM_realloc_ (lua_State *L, void *block, size_t osize, size_t nsize) {
 }
 
 
+__attribute__((yk_outline))
 void *luaM_saferealloc_ (lua_State *L, void *block, size_t osize,
                                                     size_t nsize) {
   void *newblock = luaM_realloc_(L, block, osize, nsize);
@@ -199,6 +203,7 @@ void *luaM_saferealloc_ (lua_State *L, void *block, size_t osize,
 }
 
 
+__attribute__((yk_outline))
 void *luaM_malloc_ (lua_State *L, size_t size, int tag) {
   if (size == 0)
     return NULL;  /* that's all */
