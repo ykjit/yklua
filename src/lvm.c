@@ -1260,13 +1260,21 @@ void luaV_execute (lua_State *L, CallInfo *ci) {
       }
       vmcase(OP_LOADI) {
         StkId ra = RA(i);
+      #ifdef USE_YK
+        lua_Integer b = yk_promote(GETARG_sBx(i));
+      #else
         lua_Integer b = GETARG_sBx(i);
+      #endif
         setivalue(s2v(ra), b);
         vmbreak;
       }
       vmcase(OP_LOADF) {
         StkId ra = RA(i);
+      #ifdef USE_YK
+        int b = yk_promote(GETARG_sBx(i));
+      #else
         int b = GETARG_sBx(i);
+      #endif
         setfltvalue(s2v(ra), cast_num(b));
         vmbreak;
       }
