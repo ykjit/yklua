@@ -13,8 +13,7 @@ PLAT= guess
 OPTFLAGS=-O2
 
 CC= gcc -std=gnu99
-# -fno-plt: bypass PLT for faster calls
-CFLAGS= ${OPTFLAGS} -Wall -Wextra -fno-plt -DLUA_COMPAT_5_3 $(SYSCFLAGS) $(MYCFLAGS)
+CFLAGS= ${OPTFLAGS} -Wall -Wextra -DLUA_COMPAT_5_3 $(SYSCFLAGS) $(MYCFLAGS)
 LDFLAGS= $(SYSLDFLAGS) $(MYLDFLAGS)
 LIBS= -lm $(SYSLIBS) $(MYLIBS)
 
