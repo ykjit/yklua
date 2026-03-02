@@ -1857,7 +1857,9 @@ void luaV_execute (lua_State *L, CallInfo *ci) {
         }
        ret:  /* return from a Lua function */
 #ifdef USE_YK
-        cl->p->called = false;
+        if (yk_is_interpreting()) {
+          cl->p->called = false;
+        }
 #endif
         if (ci->callstatus & CIST_FRESH)
           return;  /* end this frame */
