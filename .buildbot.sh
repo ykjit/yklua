@@ -57,14 +57,24 @@ cd ..
 
 YK_BUILD_TYPE=release-with-asserts make -j `nproc`
 
+# Decide how many times to run suites. Nightly runs do lots more.
+REPS=1
+if [ "${SD_NIGHTLY:-0}" = "1" ]; then
+    REPS=200
+fi
+
+git clone https://github.com/ltratt/try_repeat
+TRYREP="$(realpath ./try_repeat/try_repeat) -v"
+
 # Run the bundled test suite.
 cd tests
-YKD_SERIALISE_COMPILATION=1 ../src/lua -e"_U=true" all.lua
+YKD_SERIALISE_COMPILATION=1 $TRYREP $REPS ../src/lua -e"_U=true" all.lua
 cd ..
 
 # Run third-party test suites.
 git clone --recursive --shallow-submodules https://github.com/ykjit/yklua-tests
 cd yklua-tests
 git rev-parse HEAD # for the build logs.
-YKD_SERIALISE_COMPILATION=0 sh run.sh ${PWD}/../src/lua
-YKD_SERIALISE_COMPILATION=1 sh run.sh ${PWD}/../src/lua
+
+YKD_SERIALISE_COMPILATION=0 $TRYREP $REPS sh run.sh ${PWD}/../src/lua
+YKD_SERIALISE_COMPILATION=1 $TRYREP $REPS sh run.sh ${PWD}/../src/lua
