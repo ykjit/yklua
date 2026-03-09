@@ -578,7 +578,7 @@ int luaD_pretailcall (lua_State *L, CallInfo *ci, StkId func,
         // If this is a recursive call and we don't yet have a yk_location,
         // create one now.
         if (p->called && yk_location_is_null(p->yklocs[0])) {
-          p->yklocs[0] = yk_location_new();
+          p->yklocs[0] = yk_location_loop();
 #if YKLUA_DEBUG_STRS
           yk_location_set_debug_str(&p->yklocs[0], p->instdebugstrs[0]);
 #endif
@@ -635,7 +635,7 @@ CallInfo *luaD_precall (lua_State *L, StkId func, int nresults) {
         // If this is a recursive call and we don't yet have a yk_location,
         // create one now.
         if (p->called && yk_location_is_null(p->yklocs[0])) {
-          p->yklocs[0] = yk_location_new();
+          p->yklocs[0] = yk_location_loop();
 #if YKLUA_DEBUG_STRS
           yk_location_set_debug_str(&p->yklocs[0], p->instdebugstrs[0]);
 #endif

@@ -852,7 +852,7 @@ void ykifyCode(lua_State *L, Proto *f, int num_insts) {
     } else {
       continue;
     }
-    YkLocation loc = yk_location_new();
+    YkLocation loc = yk_location_loop();
 #if YKLUA_DEBUG_STRS
     char *loc_dstr = luaG_ykdebug_str(f, loc_pc);
     yk_location_set_debug_str(&loc, loc_dstr);
