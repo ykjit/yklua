@@ -848,7 +848,7 @@ void ykifyCode(lua_State *L, Proto *f, int num_insts) {
       loc_pc = GETARG_sJ(i) + pc + 2 - 1;
     } else if ((GET_OPCODE(i) == OP_FORLOOP) || (GET_OPCODE(i) == OP_TFORLOOP)) {
       lua_assert(pc - GETARG_Bx(i) + 2 - 1 < pc);
-      loc_pc = pc - GETARG_Bx(i) + 2 - 1;
+      loc_pc = pc;
     } else {
       continue;
     }
