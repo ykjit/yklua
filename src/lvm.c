@@ -1183,9 +1183,13 @@ Instruction load_inst(uint64_t pv, const Instruction *pc) {
     trap = luaG_traceexec(L, pc);  /* handle hooks */ \
     updatebase(ci);  /* correct stack */ \
   } \
-  pc = (Instruction *) yk_promote((void *) pc); \
-  uint64_t pv = yk_promote(cl_proto_version); \
-  i = load_inst(pv, pc); \
+  if (yk_is_interpreting()) { \
+    i = *pc; \
+  } else { \
+    pc = (Instruction *) yk_promote((void *) pc); \
+    uint64_t pv = yk_promote(cl_proto_version); \
+    i = load_inst(pv, pc); \
+  } \
   pc++; \
 }
 #else
