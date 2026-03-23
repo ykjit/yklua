@@ -581,7 +581,6 @@ typedef struct Proto {
   char **instdebugstrs; /* One `char *` per instruction in `code` */
 #endif
   int sizeyklocs; /* size of 'yklocs' and (if present) `instDebugStr` */
-  uint64_t proto_version; /* What 'Proto Version' was this created under? */
 #endif
   struct Proto **p;  /* functions defined inside the function */
   Upvaldesc *upvalues;  /* upvalue information */

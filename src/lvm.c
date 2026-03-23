@@ -1173,8 +1173,8 @@ void luaV_finishOp (lua_State *L) {
 #define NOOPT_VAL(X) asm volatile("" : "+r,m"(X) : : "memory");
 // Elide instruction lookup.
 __attribute__((yk_idempotent))
-Instruction load_inst(uint64_t pv, const Instruction *pc) {
-  NOOPT_VAL(pv);
+Instruction load_inst(const Instruction *pc) {
+  NOOPT_VAL(pc);
   return *pc;
 }
 
@@ -1184,8 +1184,7 @@ Instruction load_inst(uint64_t pv, const Instruction *pc) {
     updatebase(ci);  /* correct stack */ \
   } \
   pc = (Instruction *) yk_promote((void *) pc); \
-  uint64_t pv = yk_promote(cl_proto_version); \
-  i = load_inst(pv, pc); \
+  i = load_inst(pc); \
   pc++; \
 }
 #else
@@ -1216,9 +1215,6 @@ void luaV_execute (lua_State *L, CallInfo *ci) {
   trap = L->hookmask;
  returning:  /* trap already set */
   cl = clLvalue(s2v(ci->func.p));
-#ifdef USE_YK
-  uint64_t cl_proto_version = cl->p->proto_version;
-#endif
   k = cl->p->k;
   pc = ci->u.l.savedpc;
   if (l_unlikely(trap)) {
