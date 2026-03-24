@@ -1098,11 +1098,16 @@ void luaV_finishOp (lua_State *L) {
 #define RA(i)	(base+GETARG_A(i))
 #define RB(i)	(base+GETARG_B(i))
 #define vRB(i)	s2v(RB(i))
-#define KB(i)	(k+GETARG_B(i))
+#ifdef USE_YK
+#  define KB(i)	(((TValue *) yk_promote((void *) k))+GETARG_B(i))
+#  define KC(i)	(((TValue *) yk_promote((void *) k))+GETARG_C(i))
+#else
+#  define KB(i)	(k+GETARG_B(i))
+#  define KC(i)	(k+GETARG_C(i))
+#endif
 #define RC(i)	(base+GETARG_C(i))
 #define vRC(i)	s2v(RC(i))
-#define KC(i)	(k+GETARG_C(i))
-#define RKC(i)	((TESTARG_k(i)) ? k + GETARG_C(i) : s2v(base + GETARG_C(i)))
+#define RKC(i)	((TESTARG_k(i)) ? KC(i) : s2v(base + GETARG_C(i)))
 
 
 
