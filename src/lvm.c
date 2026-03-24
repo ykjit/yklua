@@ -959,7 +959,7 @@ void luaV_finishOp (lua_State *L) {
   StkId ra = RA(i); \
   TValue *v1 = vRB(i);  \
   TValue *v2 = KC(i); lua_assert(ttisnumber(v2));  \
-  op_arithf_aux(L, v1, v2, fop); }
+  op_arithfK_aux(L, v1, v2, fop); }
 
 
 /*
@@ -972,6 +972,69 @@ void luaV_finishOp (lua_State *L) {
     pc++; setivalue(s2v(ra), iop(L, i1, i2));  \
   }  \
   else op_arithf_aux(L, v1, v2, fop); }
+
+#ifdef USE_YK
+#define NOOPT_VAL(X) asm volatile("" : "+r,m"(X) : : "memory");
+
+#define ttisfloatK(o) (load_tag(o) == LUA_VNUMFLT)
+#define ttisintegerK(o) (load_tag(o) == LUA_VNUMINT)
+#define ivalueK(o) load_int(o)
+// FIXME: We currently have to use memcpy to bitcast from uint64_t to lua_Number
+#define fltvalueK(o) ({ uint64_t x = load_flt(o); lua_Number y; memcpy(&y, &x, sizeof(lua_Number)); y; })
+#define tointegernsK(o,i) \
+  (l_likely(ttisintegerK(o)) ? (*(i) = ivalueK(o), 1) \
+                          : luaV_tointegerns(o,i,LUA_FLOORN2I))
+#define tonumbernsK(o,n) \
+	(ttisfloatK(o) ? ((n) = fltvalueK(o), 1) : \
+	(ttisintegerK(o) ? ((n) = cast_num(ivalueK(o)), 1) : 0))
+
+#  define op_arithK_aux(L,v1,v2,iop,fop) {  \
+  StkId ra = RA(i); \
+  if (ttisinteger(v1) && ttisintegerK(v2)) {  \
+    lua_Integer i1 = ivalue(v1); lua_Integer i2 = ivalueK(v2);  \
+    pc++; setivalue(s2v(ra), iop(L, i1, i2));  \
+  }  \
+  else op_arithfK_aux(L, v1, v2, fop); }
+
+#  define op_arithfK_aux(L,v1,v2,fop) {  \
+  lua_Number n1; lua_Number n2;  \
+  if (tonumberns(v1, n1) && tonumbernsK(v2, n2)) {  \
+    pc++; setfltvalue(s2v(ra), fop(L, n1, n2));  \
+  }}
+
+// Returns the type tag for `o`.
+__attribute__((yk_idempotent))
+lu_byte load_tag(const TValue *o) {
+  NOOPT_VAL(o);
+  return o->tt_;
+}
+
+// Returns the `lua_Number` floating point number stored in `o`. The caller is
+// responsible for checking that this `TValue` really contains a `lua_Number`.
+__attribute__((yk_idempotent))
+uint64_t load_flt(const TValue *o) {
+  NOOPT_VAL(o);
+  uint64_t x;
+  // FIXME: We currently have to use memcpy to bitcast from lua_Number to uint64_t
+  memcpy(&x, &o->value_.n, sizeof(lua_Number));
+  return x;
+}
+
+// Returns the `lua_Integer` integer stored in `o`. The caller is responsible
+// for checking that this `TValue` really contains a `lua_Integer`.
+__attribute__((yk_idempotent))
+lua_Integer load_int(const TValue *o) {
+  NOOPT_VAL(o);
+  return o->value_.i;
+}
+#else
+#define ttisfloatK(o) ttisfloat(o)
+#define ttisintegerK(o) ttisinteger(o)
+#define ivalueK(o) ivalue(o)
+#  define op_arithK_aux(L,v1,v2,iop,fop) (op_arith_aux(L,v1,v2,iop,fop))
+#  define op_arithfK_aux(L,v1,v2,fop) (op_arithf_aux(L,v1,v2,fop))
+#  define tointegernsK(o,i) tointegerns(o,i)
+#endif
 
 
 /*
@@ -989,7 +1052,7 @@ void luaV_finishOp (lua_State *L) {
 #define op_arithK(L,iop,fop) {  \
   TValue *v1 = vRB(i);  \
   TValue *v2 = KC(i); lua_assert(ttisnumber(v2));  \
-  op_arith_aux(L, v1, v2, iop, fop); }
+  op_arithK_aux(L, v1, v2, iop, fop); }
 
 
 /*
@@ -1000,8 +1063,8 @@ void luaV_finishOp (lua_State *L) {
   TValue *v1 = vRB(i);  \
   TValue *v2 = KC(i);  \
   lua_Integer i1;  \
-  lua_Integer i2 = ivalue(v2);  \
-  if (tointegerns(v1, &i1)) {  \
+  lua_Integer i2 = ivalueK(v2);  \
+  if (tointegernsK(v1, &i1)) {  \
     pc++; setivalue(s2v(ra), op(i1, i2));  \
   }}
 
@@ -1175,7 +1238,6 @@ void luaV_finishOp (lua_State *L) {
 
 /* fetch an instruction and prepare its execution */
 #ifdef USE_YK
-#define NOOPT_VAL(X) asm volatile("" : "+r,m"(X) : : "memory");
 // Elide instruction lookup.
 __attribute__((yk_idempotent))
 Instruction load_inst(uint64_t pv, const Instruction *pc) {
