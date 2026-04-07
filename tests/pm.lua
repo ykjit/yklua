@@ -1,7 +1,12 @@
 -- $Id: testes/pm.lua $
--- See Copyright Notice in file all.lua
+-- See Copyright Notice in file lua.h
+
+-- UTF-8 file
+
 
 print('testing pattern matching')
+
+global <const> *
 
 local function checkerror (msg, f, ...)
   local s, err = pcall(f, ...)
@@ -20,9 +25,9 @@ a,b = string.find('alo', '')
 assert(a == 1 and b == 0)
 a,b = string.find('a\0o a\0o a\0o', 'a', 1)   -- first position
 assert(a == 1 and b == 1)
-a,b = string.find('a\0o a\0o a\0o', 'a\0o', 2)   -- starts in the midle
+a,b = string.find('a\0o a\0o a\0o', 'a\0o', 2)   -- starts in the middle
 assert(a == 5 and b == 7)
-a,b = string.find('a\0o a\0o a\0o', 'a\0o', 9)   -- starts in the midle
+a,b = string.find('a\0o a\0o a\0o', 'a\0o', 9)   -- starts in the middle
 assert(a == 9 and b == 11)
 a,b = string.find('a\0a\0a\0a\0\0ab', '\0ab', 2);  -- finds at the end
 assert(a == 9 and b == 11);
@@ -50,6 +55,20 @@ assert(f('aLo_ALO', '%a*') == 'aLo')
 
 assert(f("  \n\r*&\n\r   xuxu  \n\n", "%g%g%g+") == "xuxu")
 
+
+-- Adapt a pattern to UTF-8
+local function PU (p)
+  -- distribute '?' into each individual byte of a character.
+  -- (For instance, "Ã¡?" becomes "\195?\161?".)
+  p = string.gsub(p, "(" .. utf8.charpattern .. ")%?", function (c)
+    return string.gsub(c, ".", "%0?")
+  end)
+  -- change '.' to utf-8 character patterns
+  p = string.gsub(p, "%.", utf8.charpattern)
+  return p
+end
+
+
 assert(f('aaab', 'a*') == 'aaa');
 assert(f('aaa', '^.*$') == 'aaa');
 assert(f('aaa', 'b*') == '');
@@ -73,16 +92,16 @@ assert(f('aaa', '^.-$') == 'aaa')
 assert(f('aabaaabaaabaaaba', 'b.*b') == 'baaabaaabaaab')
 assert(f('aabaaabaaabaaaba', 'b.-b') == 'baaab')
 assert(f('alo xo', '.o$') == 'xo')
-assert(f(' \n isto é assim', '%S%S*') == 'isto')
-assert(f(' \n isto é assim', '%S*$') == 'assim')
-assert(f(' \n isto é assim', '[a-z]*$') == 'assim')
+assert(f(' \n isto Ã© assim', '%S%S*') == 'isto')
+assert(f(' \n isto Ã© assim', '%S*$') == 'assim')
+assert(f(' \n isto Ã© assim', '[a-z]*$') == 'assim')
 assert(f('um caracter ? extra', '[^%sa-z]') == '?')
 assert(f('', 'a?') == '')
-assert(f('á', 'á?') == 'á')
-assert(f('ábl', 'á?b?l?') == 'ábl')
-assert(f('  ábl', 'á?b?l?') == '')
+assert(f('Ã¡', PU'Ã¡?') == 'Ã¡')
+assert(f('Ã¡bl', PU'Ã¡?b?l?') == 'Ã¡bl')
+assert(f('  Ã¡bl', PU'Ã¡?b?l?') == '')
 assert(f('aa', '^aa?a?a') == 'aa')
-assert(f(']]]áb', '[^]]') == 'á')
+assert(f(']]]Ã¡b', '[^]]+') == 'Ã¡b')
 assert(f("0alo alo", "%x*") == "0a")
 assert(f("alo alo", "%C+") == "alo alo")
 print('+')
@@ -136,28 +155,28 @@ assert(string.match("alo xyzK", "(%w+)K") == "xyz")
 assert(string.match("254 K", "(%d*)K") == "")
 assert(string.match("alo ", "(%w*)$") == "")
 assert(not string.match("alo ", "(%w+)$"))
-assert(string.find("(álo)", "%(á") == 1)
-local a, b, c, d, e = string.match("âlo alo", "^(((.).).* (%w*))$")
-assert(a == 'âlo alo' and b == 'âl' and c == 'â' and d == 'alo' and e == nil)
+assert(string.find("(Ã¡lo)", "%(Ã¡") == 1)
+local a, b, c, d, e = string.match("Ã¢lo alo", PU"^(((.).). (%w*))$")
+assert(a == 'Ã¢lo alo' and b == 'Ã¢l' and c == 'Ã¢' and d == 'alo' and e == nil)
 a, b, c, d  = string.match('0123456789', '(.+(.?)())')
 assert(a == '0123456789' and b == '' and c == 11 and d == nil)
 print('+')
 
-assert(string.gsub('ülo ülo', 'ü', 'x') == 'xlo xlo')
-assert(string.gsub('alo úlo  ', ' +$', '') == 'alo úlo')  -- trim
+assert(string.gsub('Ã¼lo Ã¼lo', 'Ã¼', 'x') == 'xlo xlo')
+assert(string.gsub('alo Ãºlo  ', ' +$', '') == 'alo Ãºlo')  -- trim
 assert(string.gsub('  alo alo  ', '^%s*(.-)%s*$', '%1') == 'alo alo')  -- double trim
 assert(string.gsub('alo  alo  \n 123\n ', '%s+', ' ') == 'alo alo 123 ')
-local t = "abç d"
-a, b = string.gsub(t, '(.)', '%1@')
-assert('@'..a == string.gsub(t, '', '@') and b == 5)
-a, b = string.gsub('abçd', '(.)', '%0@', 2)
-assert(a == 'a@b@çd' and b == 2)
+local t = "abÃ§ d"
+a, b = string.gsub(t, PU'(.)', '%1@')
+assert(a == "a@b@Ã§@ @d@" and b == 5)
+a, b = string.gsub('abÃ§d', PU'(.)', '%0@', 2)
+assert(a == 'a@b@Ã§d' and b == 2)
 assert(string.gsub('alo alo', '()[al]', '%1') == '12o 56o')
 assert(string.gsub("abc=xyz", "(%w*)(%p)(%w+)", "%3%2%1-%0") ==
               "xyz=abc-abc=xyz")
 assert(string.gsub("abc", "%w", "%1%0") == "aabbcc")
 assert(string.gsub("abc", "%w+", "%0%1") == "abcabc")
-assert(string.gsub('áéí', '$', '\0óú') == 'áéí\0óú')
+assert(string.gsub('Ã¡Ã©Ã­', '$', '\0Ã³Ãº') == 'Ã¡Ã©Ã­\0Ã³Ãº')
 assert(string.gsub('', '^', 'r') == 'r')
 assert(string.gsub('', '$', 'r') == 'r')
 print('+')
@@ -188,8 +207,8 @@ do
 end
 
 function f(a,b) return string.gsub(a,'.',b) end
-assert(string.gsub("trocar tudo em |teste|b| é |beleza|al|", "|([^|]*)|([^|]*)|", f) ==
-            "trocar tudo em bbbbb é alalalalalal")
+assert(string.gsub("trocar tudo em |teste|b| Ã© |beleza|al|", "|([^|]*)|([^|]*)|", f) ==
+            "trocar tudo em bbbbb Ã© alalalalalal")
 
 local function dostring (s) return load(s, "")() or "" end
 assert(string.gsub("alo $a='x'$ novamente $return a$",
