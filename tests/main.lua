@@ -1,6 +1,6 @@
 # testing special comment on first line
 -- $Id: testes/main.lua $
--- See Copyright Notice in file all.lua
+-- See Copyright Notice in file lua.h
 
 -- most (all?) tests here assume a reasonable "Unix-like" shell
 if _port then return end
@@ -27,17 +27,19 @@ do
 end
 print("progname: "..progname)
 
-local prepfile = function (s, p)
-  p = p or prog
-  io.output(p)
-  io.write(s)
-  assert(io.close())
+
+local prepfile = function (s, mod, p)
+  mod = mod and "wb" or "w"    -- mod true means binary files
+  p = p or prog                -- file to write the program
+  local f = io.open(p, mod)
+  f:write(s)
+  assert(f:close())
 end
 
 local function getoutput ()
-  io.input(out)
-  local t = io.read("a")
-  io.input():close()
+  local f = io.open(out)
+  local t = f:read("a")
+  f:close()
   assert(os.remove(out))
   return t
 end
@@ -65,10 +67,11 @@ local function RUN (p, ...)
   assert(os.execute(s))
 end
 
+
 local function NoRun (msg, p, ...)
   p = string.gsub(p, "lua", '"'..progname..'"', 1)
   local s = string.format(p, ...)
-  s = string.format("%s 2> %s", s, out)  -- will send error to 'out'
+  s = string.format("%s >%s 2>&1", s, out)  -- send output and error to 'out'
   assert(not os.execute(s))
   assert(string.find(getoutput(), msg, 1, true))  -- check error message
 end
@@ -87,7 +90,7 @@ prepfile[[
 1, a
 )
 ]]
-RUN('lua - < %s > %s', prog, out)
+RUN('lua - -- < %s > %s', prog, out)
 checkout("1\tnil\n")
 
 RUN('echo "print(10)\nprint(2)\n" | lua > %s', out)
@@ -108,17 +111,17 @@ RUN('lua %s > %s', prog, out)
 checkout("3\n")
 
 -- bad BOMs
-prepfile("\xEF")
-NoRun("unexpected symbol", 'lua %s > %s', prog, out)
+prepfile("\xEF", true)
+NoRun("unexpected symbol", 'lua %s', prog)
 
-prepfile("\xEF\xBB")
-NoRun("unexpected symbol", 'lua %s > %s', prog, out)
+prepfile("\xEF\xBB", true)
+NoRun("unexpected symbol", 'lua %s', prog)
 
-prepfile("\xEFprint(3)")
-NoRun("unexpected symbol", 'lua %s > %s', prog, out)
+prepfile("\xEFprint(3)", true)
+NoRun("unexpected symbol", 'lua %s', prog)
 
-prepfile("\xEF\xBBprint(3)")
-NoRun("unexpected symbol", 'lua %s > %s', prog, out)
+prepfile("\xEF\xBBprint(3)", true)
+NoRun("unexpected symbol", 'lua %s', prog)
 
 
 -- test option '-'
@@ -130,11 +133,11 @@ checkout("-h\n")
 prepfile("print(package.path)")
 
 -- test LUA_PATH
-RUN('env LUA_INIT= LUA_PATH=x lua %s > %s', prog, out)
+RUN('env LUA_INIT= LUA_PATH=x lua -- %s > %s', prog, out)
 checkout("x\n")
 
 -- test LUA_PATH_version
-RUN('env LUA_INIT= LUA_PATH_5_4=y LUA_PATH=x lua %s > %s', prog, out)
+RUN('env LUA_INIT= LUA_PATH_5_5=y LUA_PATH=x lua %s > %s', prog, out)
 checkout("y\n")
 
 -- test LUA_CPATH
@@ -143,7 +146,7 @@ RUN('env LUA_INIT= LUA_CPATH=xuxu lua %s > %s', prog, out)
 checkout("xuxu\n")
 
 -- test LUA_CPATH_version
-RUN('env LUA_INIT= LUA_CPATH_5_4=yacc LUA_CPATH=x lua %s > %s', prog, out)
+RUN('env LUA_INIT= LUA_CPATH_5_5=yacc LUA_CPATH=x lua %s > %s', prog, out)
 checkout("yacc\n")
 
 -- test LUA_INIT (and its access to 'arg' table)
@@ -153,7 +156,7 @@ checkout("3.2\n")
 
 -- test LUA_INIT_version
 prepfile("print(X)")
-RUN('env LUA_INIT_5_4="X=10" LUA_INIT="X=3" lua %s > %s', prog, out)
+RUN('env LUA_INIT_5_5="X=10" LUA_INIT="X=3" lua %s > %s', prog, out)
 checkout("10\n")
 
 -- test LUA_INIT for files
@@ -213,7 +216,7 @@ convert("a;b;;c")
 
 -- test -l over multiple libraries
 prepfile("print(1); a=2; return {x=15}")
-prepfile(("print(a); print(_G['%s'].x)"):format(prog), otherprog)
+prepfile(("print(a); print(_G['%s'].x)"):format(prog), false, otherprog)
 RUN('env LUA_PATH="?;;" lua -l %s -l%s -lstring -l io %s > %s', prog, otherprog, otherprog, out)
 checkout("1\n2\n15\n2\n15\n")
 
@@ -221,6 +224,13 @@ checkout("1\n2\n15\n2\n15\n")
 prepfile("print(str.upper'alo alo', m.max(10, 20))")
 RUN("lua -l 'str=string' '-lm=math' -e 'print(m.sin(0))' %s > %s", prog, out)
 checkout("0.0\nALO ALO\t20\n")
+
+
+-- test module names with version suffix ("libs/lib2-v2")
+RUN("env LUA_CPATH='./libs/?.so' lua -l lib2-v2 -e 'print(lib2.id())' > %s",
+    out)
+checkout("true\n")
+
 
 -- test 'arg' table
 local a = [[
@@ -237,7 +247,7 @@ RUN('lua "-e " -- %s a b c', prog)   -- "-e " runs an empty command
 
 -- test 'arg' availability in libraries
 prepfile"assert(arg)"
-prepfile("assert(arg)", otherprog)
+prepfile("assert(arg)", false, otherprog)
 RUN('env LUA_PATH="?;;" lua -l%s - < %s', prog, otherprog)
 
 -- test messing up the 'arg' table
@@ -253,6 +263,15 @@ assert(string.find(getoutput(), "error calling 'print'"))
 RUN('echo "io.stderr:write(1000)\ncont" | lua -e "require\'debug\'.debug()" 2> %s', out)
 checkout("lua_debug> 1000lua_debug> ")
 
+do  -- test warning for locals
+  RUN('echo "  		local x" | lua -i > %s 2>&1', out)
+  assert(string.find(getoutput(), "warning: "))
+
+  RUN('echo "local1 = 10\nlocal1 + 3" | lua -i > %s 2>&1', out)
+  local t = getoutput()
+  assert(not string.find(t, "warning"))
+  assert(string.find(t, "13"))
+end
 
 print("testing warnings")
 
@@ -291,8 +310,11 @@ checkprogout("ZYX)\nXYZ)\n")
 -- bug since 5.2: finalizer called when closing a state could
 -- subvert finalization order
 prepfile[[
--- should be called last
+-- ensure tables will be collected only at the end of the program
+collectgarbage"stop"
+
 print("creating 1")
+-- this finalizer should be called last
 setmetatable({}, {__gc = function () print(1) end})
 
 print("creating 2")
@@ -302,7 +324,7 @@ setmetatable({}, {__gc = function ()
   -- this finalizer should not be called, as object will be
   -- created after 'lua_close' has been called
   setmetatable({}, {__gc = function () print(3) end})
-  print(collectgarbage())    -- cannot call collector here
+  print(collectgarbage() or false)    -- cannot call collector here
   os.exit(0, true)
 end})
 ]]
@@ -312,7 +334,7 @@ creating 1
 creating 2
 2
 creating 3
-nil
+false
 1
 ]]
 
@@ -325,7 +347,7 @@ checkout("a\n")
 RUN([[lua "-eprint(1)" -ea=3 -e "print(a)" > %s]], out)
 checkout("1\n3\n")
 
--- test iteractive mode
+-- test interactive mode
 prepfile[[
 (6*2-6) -- ===
 a =
@@ -335,9 +357,14 @@ a]]
 RUN([[lua -e"_PROMPT='' _PROMPT2=''" -i < %s > %s]], prog, out)
 checkprogout("6\n10\n10\n\n")
 
-prepfile("a = [[b\nc\nd\ne]]\n=a")
-RUN([[lua -e"_PROMPT='' _PROMPT2=''" -i < %s > %s]], prog, out)
+prepfile("a = [[b\nc\nd\ne]]\na")
+RUN([[lua -e"_PROMPT='' _PROMPT2=''" -i -- < %s > %s]], prog, out)
 checkprogout("b\nc\nd\ne\n\n")
+
+-- input interrupted in continuation line
+prepfile("a.\n")
+RUN([[lua -i < %s > /dev/null 2> %s]], prog, out)
+checkprogout("near <eof>\n")
 
 local prompt = "alo"
 prepfile[[ --
@@ -358,20 +385,18 @@ assert(string.find(t, prompt .. ".*" .. prompt .. ".*" .. prompt))
 
 
 -- non-string prompt
-prompt =
-  "local C = 0;\z
-   _PROMPT=setmetatable({},{__tostring = function () \z
-     C = C + 1; return C end})"
+prompt = [[
+  local C = 'X';
+   _PROMPT=setmetatable({},{__tostring = function ()
+     C = C .. 'X'; return C end})
+]]
 prepfile[[ --
 a = 2
 ]]
 RUN([[lua -e "%s" -i < %s > %s]], prompt, prog, out)
 local t = getoutput()
-assert(string.find(t, [[
-1 --
-2a = 2
-3
-]], 1, true))
+-- skip version line and then check the presence of the three prompts
+assert(string.find(t, "^.-\nXX[^\nX]*\n?XXX[^\nX]*\n?XXXX\n?$"))
 
 
 -- test for error objects
@@ -413,7 +438,7 @@ prepfile[[#comment in 1st line without \n at the end]]
 RUN('lua %s', prog)
 
 -- first-line comment with binary file
-prepfile("#comment\n" .. string.dump(load("print(3)")))
+prepfile("#comment\n" .. string.dump(load("print(3)")), true)
 RUN('lua %s > %s', prog, out)
 checkout('3\n')
 
@@ -463,12 +488,13 @@ assert(not os.remove(out))
 -- invalid options
 NoRun("unrecognized option '-h'", "lua -h")
 NoRun("unrecognized option '---'", "lua ---")
-NoRun("unrecognized option '-Ex'", "lua -Ex")
+NoRun("unrecognized option '-Ex'", "lua -Ex --")
 NoRun("unrecognized option '-vv'", "lua -vv")
 NoRun("unrecognized option '-iv'", "lua -iv")
 NoRun("'-e' needs argument", "lua -e")
 NoRun("syntax error", "lua -e a")
 NoRun("'-l' needs argument", "lua -l")
+NoRun("-i", "lua -- -i")   -- handles -i as a script name
 
 
 if T then   -- test library?
