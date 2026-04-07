@@ -11,6 +11,9 @@
 
 
 #include <stddef.h>
+#ifdef USE_YK
+#include <stdlib.h>
+#endif
 
 #include "lua.h"
 
