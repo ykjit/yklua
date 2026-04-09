@@ -672,7 +672,7 @@ l_sinline int precallC (lua_State *L, StkId func, unsigned status,
 ** (so that it includes the function itself). Return the number of
 ** results, if it was a C function, or -1 for a Lua function.
 */
-__attribute__((yk_unroll_safe))
+__attribute__((yk_unroll))
 int luaD_pretailcall (lua_State *L, CallInfo *ci, StkId func,
                                     int narg1, int delta) {
   unsigned status = LUA_MULTRET + 1;
@@ -731,7 +731,7 @@ int luaD_pretailcall (lua_State *L, CallInfo *ci, StkId func,
 ** returns NULL, with all the results on the stack, starting at the
 ** original function position.
 */
-__attribute__((yk_unroll_safe))
+__attribute__((yk_unroll))
 CallInfo *luaD_precall (lua_State *L, StkId func, int nresults) {
   unsigned status = cast_uint(nresults + 1);
   lua_assert(status <= MAXRESULTS + 1);
