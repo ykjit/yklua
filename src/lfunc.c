@@ -233,7 +233,7 @@ static void poptbclist (lua_State *L) {
 ** Close all upvalues and to-be-closed variables up to the given stack
 ** level. Return restored 'level'.
 */
-__attribute__((yk_unroll_safe))
+__attribute__((yk_unroll))
 StkId luaF_close (lua_State *L, StkId level, TStatus status, int yy) {
   ptrdiff_t levelrel = savestack(L, level);
   luaF_closeupval(L, level);  /* first, close the upvalues */

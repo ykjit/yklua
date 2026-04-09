@@ -291,7 +291,7 @@ static int floatforloop (StkId ra) {
 /*
 ** Finish the table access 'val = t[key]' and return the tag of the result.
 */
-__attribute__((yk_unroll_safe))
+__attribute__((yk_unroll))
 lu_byte luaV_finishget (lua_State *L, const TValue *t, TValue *key,
                                       StkId val, lu_byte tag) {
   int loop;  /* counter to avoid infinite loops */
