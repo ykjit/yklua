@@ -95,13 +95,21 @@ static void LUAI_TRY (lua_State *L, lua_longjmp *c, Pfunc f, void *ud) {
 #elif defined(LUA_USE_POSIX)				/* }{ */
 
 /* in POSIX, use _longjmp/_setjmp (more efficient) */
-#define LUAI_THROW(L,c)		_longjmp((c)->b, 1)
+#  ifdef USE_YK
+#define LUAI_THROW(L,c)		yk_longjmp((c)->b, 1)
+#  else
+#define LUAI_THROW(L,c)		longjmp((c)->b, 1)
+#  endif
 #define LUAI_TRY(L,c,f,ud)	if (_setjmp((c)->b) == 0) ((f)(L, ud))
 
 #else							/* }{ */
 
 /* ISO C handling with long jumps */
+#  ifdef USE_YK
+#define LUAI_THROW(L,c)		yk_longjmp((c)->b, 1)
+#  else
 #define LUAI_THROW(L,c)		longjmp((c)->b, 1)
+#  endif
 #define LUAI_TRY(L,c,f,ud)	if (setjmp((c)->b) == 0) ((f)(L, ud))
 
 #endif							/* } */
