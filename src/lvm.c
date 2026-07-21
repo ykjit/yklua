@@ -1256,8 +1256,8 @@ lua_Integer load_int(const TValue *o) {
 #ifdef USE_YK
 // Elide instruction lookup.
 __attribute__((yk_idempotent))
-Instruction load_inst(uint64_t pv, const Instruction *pc) {
-  NOOPT_VAL(pv);
+Instruction load_inst(const Instruction *pc) {
+  NOOPT_VAL(pc);
   return *pc;
 }
 
@@ -1270,8 +1270,7 @@ Instruction load_inst(uint64_t pv, const Instruction *pc) {
     i = *pc; \
   } else { \
     pc = (Instruction *) yk_promote((void *) pc); \
-    uint64_t pv = yk_promote(cl_proto_version); \
-    i = load_inst(pv, pc); \
+    i = load_inst(pc); \
   } \
   pc++; \
 }
@@ -1303,9 +1302,6 @@ void luaV_execute (lua_State *L, CallInfo *ci) {
   trap = L->hookmask;
  returning:  /* trap already set */
   cl = ci_func(ci);
-#ifdef USE_YK
-  uint64_t cl_proto_version = cl->p->proto_version;
-#endif
   k = cl->p->k;
   pc = ci->u.l.savedpc;
   if (l_unlikely(trap))

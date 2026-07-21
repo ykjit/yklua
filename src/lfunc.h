@@ -10,14 +10,6 @@
 
 #include "lobject.h"
 
-#ifdef USE_YK
-// Every time a function is deleted, we crank this integer. Thus if two
-// `Proto`s are allocated -- at different times! -- at the same address, the
-// idempotent `load_inst` function won't consider them to be the same function.
-extern uint64_t global_proto_version;
-#endif
-
-
 #define sizeCclosure(n)  \
 	(offsetof(CClosure, upvalue) + sizeof(TValue) * cast_uint(n))
 
