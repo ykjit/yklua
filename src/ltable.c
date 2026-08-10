@@ -803,7 +803,15 @@ Table *luaH_new (lua_State *L) {
   t->flags = maskflags;  /* table has no metamethod fields */
   t->array = NULL;
   t->asize = 0;
+#ifdef USE_YK
+  // We don't want to make `setnodevector` "unroll" because the non-zero case
+  // may not be constant.
+  t->node = cast(Node *, dummynode);  /* use common 'dummynode' */
+  t->lsizenode = 0;
+  setdummy(t);  /* signal that it is using dummy node */
+#else
   setnodevector(L, t, 0);
+#endif
   return t;
 }
 
