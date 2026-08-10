@@ -545,6 +545,9 @@ static unsigned tryfuncTM (lua_State *L, StkId func, unsigned status) {
 
 
 /* Generic case for 'moveresult' */
+#ifdef USE_YK
+__attribute__((yk_unroll))
+#endif
 l_sinline void genmoveresults (lua_State *L, StkId res, int nres,
                                              int wanted) {
   StkId firstresult = L->top.p - nres;  /* index of first result */
