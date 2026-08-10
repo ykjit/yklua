@@ -2,6 +2,9 @@
 
 set -e
 
+# FIXME: Hack for https://github.com/rust-lang/cargo/issues/17287
+export CARGO_UNSTABLE_BUILD_DIR_NEW_LAYOUT=false
+
 # First build without the JIT and check the tests still work.
 make -j `nproc`
 cd tests
