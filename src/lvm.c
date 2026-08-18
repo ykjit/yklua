@@ -1190,7 +1190,7 @@ GCObject *load_gcobj(const TValue *o) {
 #endif
 #define RC(i)	(base+GETARG_C(i))
 #define vRC(i)	s2v(RC(i))
-#define RKC(i)	((TESTARG_k(i)) ? k + GETARG_C(i) : s2v(base + GETARG_C(i)))
+#define RKC(i)	((TESTARG_k(i)) ? KC(i) : s2v(base + GETARG_C(i)))
 
 
 
