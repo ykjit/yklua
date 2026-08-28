@@ -957,10 +957,22 @@ static int hashkeyisempty (Table *t, lua_Unsigned key) {
 
 
 static lu_byte finishnodeget (const TValue *val, TValue *res) {
+#ifdef USE_YK
+  lu_byte rawtag = rawtt(val);
+  lu_byte tag = withvariant(rawtag);
+  if (!tagisempty(tag)) {
+    res->value_ = val->value_;
+    settt_(res, rawtag);
+    checkliveness(((lua_State*)NULL), res);
+    lua_assert(!isnonstrictnil(res));
+  }
+  return tag;
+#else
   if (!ttisnil(val)) {
     setobj(((lua_State*)NULL), res, val);
   }
   return ttypetag(val);
+#endif
 }
 
 
