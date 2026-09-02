@@ -42,6 +42,9 @@ LClosure *luaF_newLclosure (lua_State *L, int nupvals) {
   GCObject *o = luaC_newobj(L, LUA_VLCL, sizeLclosure(nupvals));
   LClosure *c = gco2lcl(o);
   c->p = NULL;
+#ifdef USE_YK
+  c->called = false;
+#endif
   c->nupvalues = cast_byte(nupvals);
   while (nupvals--) c->upvals[nupvals] = NULL;
   return c;
@@ -271,7 +274,6 @@ Proto *luaF_newproto (lua_State *L) {
   f->lastlinedefined = 0;
   f->source = NULL;
 #ifdef USE_YK
-  f->called = false;
   f->yklocs = NULL;
 #ifdef YKLUA_DEBUG_STRS
   f->instdebugstrs = NULL;
@@ -338,4 +340,3 @@ const char *luaF_getlocalname (const Proto *f, int local_number, int pc) {
   }
   return NULL;  /* not found */
 }
-

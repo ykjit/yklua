@@ -646,7 +646,6 @@ l_sinline CallInfo *prepCallInfo (lua_State *L, StkId func, unsigned status,
   return ci;
 }
 
-
 /*
 ** precall for C functions
 */
@@ -694,7 +693,30 @@ int luaD_pretailcall (lua_State *L, CallInfo *ci, StkId func,
     case LUA_VLCF:  /* light C function */
       return precallC(L, func, status, fvalue(s2v(func)));
     case LUA_VLCL: {  /* Lua function */
-      Proto *p = clLvalue(s2v(func))->p;
+      LClosure *cl = clLvalue(s2v(func));
+      Proto *p = cl->p;
+#ifdef USE_YK
+      if (yk_is_interpreting()) {
+        // If this is a recursive call and we don't yet have a yk_location,
+        // create one now.
+        LClosure *caller_cl = ci_func(ci);
+        if (cl->called && yk_location_is_null(p->yklocs[0])) {
+          p->yklocs[0] = yk_location_new();
+#if YKLUA_DEBUG_STRS
+          yk_location_set_debug_str(&p->yklocs[0], p->instdebugstrs[0]);
+#endif
+        } else {
+          // Because this is a tail call the "current" function -- `caller_p`
+          // -- has implicitly returned. If the "current" function is the same
+          // as the "about to call" function, we don't do anything; in all
+          // other cases we mark the "current" function as uncalled.
+          if (!cl->called)
+            cl->called = true;
+          if (caller_cl != cl)
+            caller_cl->called = false;
+        }
+      }
+#endif
       int fsize = p->maxstacksize;  /* frame size */
       int nfixparams = p->numparams;
       int i;
@@ -707,27 +729,6 @@ int luaD_pretailcall (lua_State *L, CallInfo *ci, StkId func,
         setnilvalue(s2v(func + narg1));  /* complete missing arguments */
       ci->top.p = func + 1 + fsize;  /* top for new function */
       lua_assert(ci->top.p <= L->stack_last.p);
-#ifdef USE_YK
-      if (yk_is_interpreting()) {
-        // If this is a recursive call and we don't yet have a yk_location,
-        // create one now.
-        if (p->called && yk_location_is_null(p->yklocs[0])) {
-          p->yklocs[0] = yk_location_new();
-#if YKLUA_DEBUG_STRS
-          yk_location_set_debug_str(&p->yklocs[0], p->instdebugstrs[0]);
-#endif
-        } else if (!p->called) {
-          p->called = true;
-        }
-        // Because this is a tail call the "current" function -- `caller_p` --
-        // has implicitly returned. If the "current" function is the same as
-        // the "about to call" function, we don't do anything; in all other
-        // cases we mark the "current" function as uncalled.
-        Proto *caller_p = ci_func(ci)->p;
-        if (caller_p != p)
-          caller_p->called = false;
-      }
-#endif
       ci->u.l.savedpc = p->code;  /* starting point */
       ci->callstatus |= CIST_TAIL;
       L->top.p = func + narg1;  /* set top */
@@ -765,7 +766,20 @@ CallInfo *luaD_precall (lua_State *L, StkId func, int nresults) {
       return NULL;
     case LUA_VLCL: {  /* Lua function */
       CallInfo *ci;
-      Proto *p = clLvalue(s2v(func))->p;
+      LClosure *cl = clLvalue(s2v(func));
+      Proto *p = cl->p;
+#ifdef USE_YK
+      if (yk_is_interpreting()) {
+        if (cl->called && yk_location_is_null(p->yklocs[0])) {
+          p->yklocs[0] = yk_location_new();
+#if YKLUA_DEBUG_STRS
+          yk_location_set_debug_str(&p->yklocs[0], p->instdebugstrs[0]);
+#endif
+        }
+        else if (!cl->called)
+          cl->called = true;
+      }
+#endif
       int narg = cast_int(L->top.p - func) - 1;  /* number of real arguments */
       int nfixparams = p->numparams;
       int fsize = p->maxstacksize;  /* frame size */
@@ -775,20 +789,6 @@ CallInfo *luaD_precall (lua_State *L, StkId func, int nresults) {
       for (; narg < nfixparams; narg++)
         setnilvalue(s2v(L->top.p++));  /* complete missing arguments */
       lua_assert(ci->top.p <= L->stack_last.p);
-#ifdef USE_YK
-      if (yk_is_interpreting()) {
-        // If this is a recursive call and we don't yet have a yk_location,
-        // create one now.
-        if (p->called && yk_location_is_null(p->yklocs[0])) {
-          p->yklocs[0] = yk_location_new();
-#if YKLUA_DEBUG_STRS
-          yk_location_set_debug_str(&p->yklocs[0], p->instdebugstrs[0]);
-#endif
-        } else if (!p->called) {
-          p->called = true;
-        }
-      }
-#endif
       return ci;
     }
     default: {  /* not a function */
@@ -1214,5 +1214,3 @@ TStatus luaD_protectedparser (lua_State *L, ZIO *z, const char *name,
   decnny(L);
   return status;
 }
-
-

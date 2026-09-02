@@ -1301,7 +1301,6 @@ Instruction load_inst(uint64_t pv, const Instruction *pc) {
 #define vmcase(l)	case l:
 #define vmbreak		break
 
-
 void luaV_execute (lua_State *L, CallInfo *ci) {
   LClosure *cl;
   TValue *k;
@@ -1854,6 +1853,10 @@ void luaV_execute (lua_State *L, CallInfo *ci) {
         vmbreak;
       }
       vmcase(OP_TAILCALL) {
+#ifdef USE_YK
+          if (yk_is_interpreting())
+            cl->called = false;
+#endif
         StkId ra = RA(i);
         int b = GETARG_B(i);  /* number of arguments + 1 (function) */
         int n;  /* number of results when calling a C function */
@@ -1880,6 +1883,10 @@ void luaV_execute (lua_State *L, CallInfo *ci) {
         }
       }
       vmcase(OP_RETURN) {
+#ifdef USE_YK
+        if (yk_is_interpreting())
+          cl->called = false;
+#endif
         StkId ra = RA(i);
         int n = GETARG_B(i) - 1;  /* number of results */
         int nparams1 = GETARG_C(i);
@@ -1902,6 +1909,10 @@ void luaV_execute (lua_State *L, CallInfo *ci) {
         goto ret;
       }
       vmcase(OP_RETURN0) {
+#ifdef USE_YK
+        if (yk_is_interpreting())
+          cl->called = false;
+#endif
         if (l_unlikely(L->hookmask)) {
           StkId ra = RA(i);
           L->top.p = ra;
@@ -1919,6 +1930,10 @@ void luaV_execute (lua_State *L, CallInfo *ci) {
         goto ret;
       }
       vmcase(OP_RETURN1) {
+#ifdef USE_YK
+        if (yk_is_interpreting())
+          cl->called = false;
+#endif
         if (l_unlikely(L->hookmask)) {
           StkId ra = RA(i);
           L->top.p = ra + 1;
@@ -1940,11 +1955,6 @@ void luaV_execute (lua_State *L, CallInfo *ci) {
           }
         }
        ret:  /* return from a Lua function */
-#ifdef USE_YK
-        if (yk_is_interpreting()) {
-          cl->p->called = false;
-        }
-#endif
         if (ci->callstatus & CIST_FRESH)
           return;  /* end this frame */
         else {
