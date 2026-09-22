@@ -139,11 +139,23 @@
 ** following macros also move TValues to/from arrays, but receive the
 ** precomputed tag value or address as an extra argument.
 */
+#ifdef USE_YK
+// Make clear that `h` cannot alias with `res`.
+ #define farr2val(h,k,tag,res)  \
+  { Value *arrval_ = getArrVal(h,(k)); \
+    (res)->tt_ = tag; (res)->value_ = *arrval_; }
+
+// Make clear that `h` cannot alias with `tag`.
+#define fval2arr(h,k,tag,val)  \
+  { Value *arrval_ = getArrVal(h,(k)); \
+    *tag = (val)->tt_; *arrval_ = (val)->value_; }
+#else
 #define farr2val(h,k,tag,res)  \
   ((res)->tt_ = tag, (res)->value_ = *getArrVal(h,(k)))
 
 #define fval2arr(h,k,tag,val)  \
   (*tag = (val)->tt_, *getArrVal(h,(k)) = (val)->value_)
+#endif
 
 
 LUAI_FUNC lu_byte luaH_get (Table *t, const TValue *key, TValue *res);
