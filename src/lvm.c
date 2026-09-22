@@ -1381,7 +1381,12 @@ void luaV_execute (lua_State *L, CallInfo *ci) {
       vmcase(OP_LOADKX) {
         StkId ra = RA(i);
         TValue *rb;
+#ifdef USE_YK
+        Instruction ni = yk_is_interpreting() ? *pc : load_inst(cl_proto_version, pc); \
+        rb = k + GETARG_Ax(ni); pc++;
+#else
         rb = k + GETARG_Ax(*pc); pc++;
+#endif
         setobj2s(L, ra, rb);
         vmbreak;
       }
@@ -1539,7 +1544,12 @@ void luaV_execute (lua_State *L, CallInfo *ci) {
         if (TESTARG_k(i)) {  /* non-zero extra argument? */
           lua_assert(GETARG_Ax(*pc) != 0);
           /* add it to array size */
+#ifdef USE_YK
+          Instruction ni = yk_is_interpreting() ? *pc : load_inst(cl_proto_version, pc); \
+          c += cast_uint(GETARG_Ax(ni)) * (MAXARG_vC + 1);
+#else
           c += cast_uint(GETARG_Ax(*pc)) * (MAXARG_vC + 1);
+#endif
         }
         pc++;  /* skip extra argument */
         L->top.p = ra + 1;  /* correct top in case of emergency GC */
@@ -2050,7 +2060,12 @@ void luaV_execute (lua_State *L, CallInfo *ci) {
           L->top.p = ci->top.p;  /* correct top in case of emergency GC */
         last += n;
         if (TESTARG_k(i)) {
+#ifdef USE_YK
+          Instruction ni = yk_is_interpreting() ? *pc : load_inst(cl_proto_version, pc); \
+          last += cast_uint(GETARG_Ax(ni)) * (MAXARG_vC + 1);
+#else
           last += cast_uint(GETARG_Ax(*pc)) * (MAXARG_vC + 1);
+#endif
           pc++;
         }
         /* when 'n' is known, table should have proper size */
