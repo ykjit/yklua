@@ -1211,7 +1211,14 @@ GCObject *load_gcobj(const TValue *o) {
 
 
 /* for test instructions, execute the jump instruction that follows it */
+#ifdef USE_YK
+#define donextjump(ci) { \
+  Instruction ni = yk_is_interpreting() ? *pc : load_inst(cl_proto_version, pc); \
+  dojump(ci, ni, 1); \
+}
+#else
 #define donextjump(ci)	{ Instruction ni = *pc; dojump(ci, ni, 1); }
+#endif
 
 /*
 ** do a conditional jump: skip next instruction if 'cond' is not what
