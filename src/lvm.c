@@ -999,18 +999,12 @@ void luaV_finishOp (lua_State *L) {
 	(ttisintegerK(o) ? ((n) = cast_num(ivalueK(o)), 1) : 0))
 
 #  define op_arithK_aux(L,v1,v2,iop,fop) {  \
-  StkId ra = RA(i); \
   if (ttisinteger(v1) && ttisintegerK(v2)) {  \
+    StkId ra = RA(i); \
     lua_Integer i1 = ivalue(v1); lua_Integer i2 = ivalueK(v2);  \
     pc++; setivalue(s2v(ra), iop(L, i1, i2));  \
   }  \
-  else op_arithfK_aux(L, v1, v2, fop); }
-
-#  define op_arithfK_aux(L,v1,v2,fop) {  \
-  lua_Number n1; lua_Number n2;  \
-  if (tonumberns(v1, n1) && tonumbernsK(v2, n2)) {  \
-    pc++; setfltvalue(s2v(ra), fop(L, n1, n2));  \
-  }}
+  else op_arithf_aux(L, v1, v2, fop); }
 
 // Returns the type tag for `o`.
 __attribute__((yk_idempotent))
@@ -1091,7 +1085,7 @@ GCObject *load_gcobj(const TValue *o) {
 #define op_arithK(L,iop,fop) {  \
   TValue *v1 = vRB(i);  \
   TValue *v2 = KC(i); lua_assert(ttisnumber(v2));  \
-  op_arith_aux(L, v1, v2, iop, fop); }
+  op_arithK_aux(L, v1, v2, iop, fop); }
 
 
 /*
