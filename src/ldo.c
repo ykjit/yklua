@@ -717,8 +717,13 @@ int luaD_pretailcall (lua_State *L, CallInfo *ci, StkId func,
         }
       }
 #endif
+#ifdef USE_YK
+      int fsize = yk_promote((int) p->maxstacksize); /* frame size */
+      int nfixparams = yk_promote((int) p->numparams);
+#else
       int fsize = p->maxstacksize;  /* frame size */
       int nfixparams = p->numparams;
+#endif
       int i;
       checkstackp(L, fsize - delta, func);
       ci->func.p -= delta;  /* restore 'func' (if vararg) */

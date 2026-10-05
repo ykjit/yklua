@@ -835,9 +835,14 @@ lua_Integer luaV_shiftl (lua_Integer x, lua_Integer y) {
 ** create a new Lua closure, push it in the stack, and initialize
 ** its upvalues.
 */
+__attribute__((yk_unroll))
 static void pushclosure (lua_State *L, Proto *p, UpVal **encup, StkId base,
                          StkId ra) {
+#ifdef USE_YK
+  int nup = yk_promote(p->sizeupvalues);
+#else
   int nup = p->sizeupvalues;
+#endif
   Upvaldesc *uv = p->upvalues;
   int i;
   LClosure *ncl = luaF_newLclosure(L, nup);
