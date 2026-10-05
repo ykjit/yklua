@@ -279,7 +279,7 @@ Proto *luaF_newproto (lua_State *L) {
   f->instdebugstrs = NULL;
 #endif
   f->sizeyklocs = 0;
-  f->proto_version = global_proto_version;
+  f->proto_version = global_proto_version++;
 #endif
   return f;
 }
@@ -301,9 +301,6 @@ lu_mem luaF_protosize (Proto *p) {
 
 
 void luaF_freeproto (lua_State *L, Proto *f) {
-#ifdef USE_YK
-  global_proto_version++;
-#endif
   if (!(f->flag & PF_FIXED)) {
     luaM_freearray(L, f->code, cast_sizet(f->sizecode));
     luaM_freearray(L, f->lineinfo, cast_sizet(f->sizelineinfo));
