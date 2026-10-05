@@ -1212,7 +1212,7 @@ GCObject *load_gcobj(const TValue *o) {
 /* for test instructions, execute the jump instruction that follows it */
 #ifdef USE_YK
 #define donextjump(ci) { \
-  Instruction ni = yk_is_interpreting() ? *pc : load_inst(cl_proto_version, pc); \
+  Instruction ni = yk_is_interpreting() ? *pc : load_inst(yk_promote(cl_proto_version), pc); \
   dojump(ci, ni, 1); \
 }
 #else
@@ -1381,7 +1381,7 @@ void luaV_execute (lua_State *L, CallInfo *ci) {
         StkId ra = RA(i);
         TValue *rb;
 #ifdef USE_YK
-        Instruction ni = yk_is_interpreting() ? *pc : load_inst(cl_proto_version, pc); \
+        Instruction ni = yk_is_interpreting() ? *pc : load_inst(yk_promote(cl_proto_version), pc); \
         rb = k + GETARG_Ax(ni); pc++;
 #else
         rb = k + GETARG_Ax(*pc); pc++;
@@ -1544,7 +1544,7 @@ void luaV_execute (lua_State *L, CallInfo *ci) {
           lua_assert(GETARG_Ax(*pc) != 0);
           /* add it to array size */
 #ifdef USE_YK
-          Instruction ni = yk_is_interpreting() ? *pc : load_inst(cl_proto_version, pc); \
+          Instruction ni = yk_is_interpreting() ? *pc : load_inst(yk_promote(cl_proto_version), pc); \
           c += cast_uint(GETARG_Ax(ni)) * (MAXARG_vC + 1);
 #else
           c += cast_uint(GETARG_Ax(*pc)) * (MAXARG_vC + 1);
@@ -2060,7 +2060,7 @@ void luaV_execute (lua_State *L, CallInfo *ci) {
         last += n;
         if (TESTARG_k(i)) {
 #ifdef USE_YK
-          Instruction ni = yk_is_interpreting() ? *pc : load_inst(cl_proto_version, pc); \
+          Instruction ni = yk_is_interpreting() ? *pc : load_inst(yk_promote(cl_proto_version), pc); \
           last += cast_uint(GETARG_Ax(ni)) * (MAXARG_vC + 1);
 #else
           last += cast_uint(GETARG_Ax(*pc)) * (MAXARG_vC + 1);
