@@ -1234,7 +1234,7 @@ GCObject *load_gcobj(const TValue *o) {
 /* for test instructions, execute the jump instruction that follows it */
 #ifdef USE_YK
 #define donextjump(ci) { \
-  dojump(ci, load_inst(), 1); \
+  dojump(ci, load_inst(0), 1); \
 }
 #else
 #define donextjump(ci)	{ Instruction ni = *pc; dojump(ci, ni, 1); }
@@ -1294,14 +1294,14 @@ GCObject *load_gcobj(const TValue *o) {
 /* fetch an instruction and prepare its execution */
 #ifdef USE_YK
 // Elide instruction lookup.
-#define load_inst() ({ \
+#define load_inst(off) ({ \
   Instruction fetched_inst; \
   if (yk_is_interpreting()) { \
-    fetched_inst = *pc; \
+    fetched_inst = *(pc + (off)); \
   } else { \
     pc = (const Instruction *) yk_promote((void *) pc); \
     uint64_t pv = yk_promote(cl_proto_version); \
-    fetched_inst = __load_inst(pv, pc); \
+    fetched_inst = __load_inst(pv, pc + (off)); \
   } \
   fetched_inst; \
 })
@@ -1320,7 +1320,7 @@ Instruction __load_inst(uint64_t pv, const Instruction *pc) {
   if (yk_is_interpreting()) { \
     i = *pc; \
   } else { \
-    i = load_inst(); \
+    i = load_inst(0); \
   } \
   pc++; \
 }
@@ -1412,7 +1412,7 @@ void luaV_execute (lua_State *L, CallInfo *ci) {
         StkId ra = RA(i);
         TValue *rb;
 #ifdef USE_YK
-        rb = KAx(load_inst()); pc++;
+        rb = KAx(load_inst(0)); pc++;
 #else
         rb = k + GETARG_Ax(*pc); pc++;
 #endif
@@ -1574,7 +1574,7 @@ void luaV_execute (lua_State *L, CallInfo *ci) {
           lua_assert(GETARG_Ax(*pc) != 0);
           /* add it to array size */
 #ifdef USE_YK
-          c += cast_uint(GETARG_Ax(load_inst())) * (MAXARG_vC + 1);
+          c += cast_uint(GETARG_Ax(load_inst(0))) * (MAXARG_vC + 1);
 #else
           c += cast_uint(GETARG_Ax(*pc)) * (MAXARG_vC + 1);
 #endif
@@ -1718,7 +1718,11 @@ void luaV_execute (lua_State *L, CallInfo *ci) {
       }
       vmcase(OP_MMBIN) {
         StkId ra = RA(i);
+#ifdef USE_YK
+        Instruction pi = load_inst(-2);  /* original arith. expression */
+#else
         Instruction pi = *(pc - 2);  /* original arith. expression */
+#endif
         TValue *rb = vRB(i);
         TMS tm = (TMS)GETARG_C(i);
         StkId result = RA(pi);
@@ -1728,7 +1732,11 @@ void luaV_execute (lua_State *L, CallInfo *ci) {
       }
       vmcase(OP_MMBINI) {
         StkId ra = RA(i);
+#ifdef USE_YK
+        Instruction pi = load_inst(-2);  /* original arith. expression */
+#else
         Instruction pi = *(pc - 2);  /* original arith. expression */
+#endif
         int imm = GETARG_sB(i);
         TMS tm = (TMS)GETARG_C(i);
         int flip = GETARG_k(i);
@@ -1738,7 +1746,11 @@ void luaV_execute (lua_State *L, CallInfo *ci) {
       }
       vmcase(OP_MMBINK) {
         StkId ra = RA(i);
+#ifdef USE_YK
+        Instruction pi = load_inst(-2);  /* original arith. expression */
+#else
         Instruction pi = *(pc - 2);  /* original arith. expression */
+#endif
         TValue *imm = KB(i);
         TMS tm = (TMS)GETARG_C(i);
         int flip = GETARG_k(i);
@@ -2089,7 +2101,7 @@ void luaV_execute (lua_State *L, CallInfo *ci) {
         last += n;
         if (TESTARG_k(i)) {
 #ifdef USE_YK
-          last += cast_uint(GETARG_Ax(load_inst())) * (MAXARG_vC + 1);
+          last += cast_uint(GETARG_Ax(load_inst(0))) * (MAXARG_vC + 1);
 #else
           last += cast_uint(GETARG_Ax(*pc)) * (MAXARG_vC + 1);
 #endif
