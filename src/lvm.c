@@ -1234,8 +1234,7 @@ GCObject *load_gcobj(const TValue *o) {
 /* for test instructions, execute the jump instruction that follows it */
 #ifdef USE_YK
 #define donextjump(ci) { \
-  Instruction ni = yk_is_interpreting() ? *pc : load_inst(yk_promote(cl_proto_version), pc); \
-  dojump(ci, ni, 1); \
+  dojump(ci, load_inst(), 1); \
 }
 #else
 #define donextjump(ci)	{ Instruction ni = *pc; dojump(ci, ni, 1); }
@@ -1295,8 +1294,20 @@ GCObject *load_gcobj(const TValue *o) {
 /* fetch an instruction and prepare its execution */
 #ifdef USE_YK
 // Elide instruction lookup.
+#define load_inst() ({ \
+  Instruction fetched_inst; \
+  if (yk_is_interpreting()) { \
+    fetched_inst = *pc; \
+  } else { \
+    pc = (const Instruction *) yk_promote((void *) pc); \
+    uint64_t pv = yk_promote(cl_proto_version); \
+    fetched_inst = __load_inst(pv, pc); \
+  } \
+  fetched_inst; \
+})
+
 __attribute__((yk_idempotent))
-Instruction load_inst(uint64_t pv, const Instruction *pc) {
+Instruction __load_inst(uint64_t pv, const Instruction *pc) {
   NOOPT_VAL(pv);
   return *pc;
 }
@@ -1309,9 +1320,7 @@ Instruction load_inst(uint64_t pv, const Instruction *pc) {
   if (yk_is_interpreting()) { \
     i = *pc; \
   } else { \
-    pc = (Instruction *) yk_promote((void *) pc); \
-    uint64_t pv = yk_promote(cl_proto_version); \
-    i = load_inst(pv, pc); \
+    i = load_inst(); \
   } \
   pc++; \
 }
@@ -1403,8 +1412,7 @@ void luaV_execute (lua_State *L, CallInfo *ci) {
         StkId ra = RA(i);
         TValue *rb;
 #ifdef USE_YK
-        Instruction ni = yk_is_interpreting() ? *pc : load_inst(yk_promote(cl_proto_version), pc); \
-        rb = KAx(ni); pc++;
+        rb = KAx(load_inst()); pc++;
 #else
         rb = k + GETARG_Ax(*pc); pc++;
 #endif
@@ -1566,8 +1574,7 @@ void luaV_execute (lua_State *L, CallInfo *ci) {
           lua_assert(GETARG_Ax(*pc) != 0);
           /* add it to array size */
 #ifdef USE_YK
-          Instruction ni = yk_is_interpreting() ? *pc : load_inst(yk_promote(cl_proto_version), pc); \
-          c += cast_uint(GETARG_Ax(ni)) * (MAXARG_vC + 1);
+          c += cast_uint(GETARG_Ax(load_inst())) * (MAXARG_vC + 1);
 #else
           c += cast_uint(GETARG_Ax(*pc)) * (MAXARG_vC + 1);
 #endif
@@ -2082,8 +2089,7 @@ void luaV_execute (lua_State *L, CallInfo *ci) {
         last += n;
         if (TESTARG_k(i)) {
 #ifdef USE_YK
-          Instruction ni = yk_is_interpreting() ? *pc : load_inst(yk_promote(cl_proto_version), pc); \
-          last += cast_uint(GETARG_Ax(ni)) * (MAXARG_vC + 1);
+          last += cast_uint(GETARG_Ax(load_inst())) * (MAXARG_vC + 1);
 #else
           last += cast_uint(GETARG_Ax(*pc)) * (MAXARG_vC + 1);
 #endif
