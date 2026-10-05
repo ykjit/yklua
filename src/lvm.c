@@ -1100,7 +1100,7 @@ GCObject *load_gcobj(const TValue *o) {
   TValue *v1 = vRB(i);  \
   TValue *v2 = KC(i);  \
   lua_Integer i1;  \
-  lua_Integer i2 = ivalue(v2);  \
+  lua_Integer i2 = ivalueK(v2);  \
   if (tointegerns(v1, &i1)) {  \
     StkId ra = RA(i); \
     pc++; setivalue(s2v(ra), op(i1, i2));  \
