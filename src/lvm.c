@@ -988,6 +988,23 @@ void luaV_finishOp (lua_State *L) {
 #ifdef USE_YK
 #define NOOPT_VAL(X) asm volatile("" : "+r,m"(X) : : "memory");
 
+#define setobj2sK(L,dst,src) { \
+  if (yk_is_interpreting()) { setobj2s(L, dst, src); } \
+  else { \
+    TValue *target = s2v(dst); \
+    lu_byte tag = load_tag(src); \
+    switch (tag) { \
+      case LUA_VNUMINT: target->value_.i = load_int(src); break; \
+      case LUA_VNUMFLT: target->value_.n = fltvalueK(src); break; \
+      case ctb(LUA_VSHRSTR): case ctb(LUA_VLNGSTR): \
+        target->value_.gc = load_gcobj(src); break; \
+      default: target->value_ = src->value_; break; \
+    } \
+    settt_(target, tag); \
+    checkliveness(L, target); \
+    lua_assert(!isnonstrictnil(target)); \
+  } }
+
 #define ttisfloatK(o) (load_tag(o) == LUA_VNUMFLT)
 #define ttisintegerK(o) (load_tag(o) == LUA_VNUMINT)
 #define ivalueK(o) load_int(o)
@@ -1045,6 +1062,7 @@ GCObject *load_gcobj(const TValue *o) {
   return o->value_.gc;
 }
 #else
+#define setobj2sK(L,dst,src) setobj2s(L,dst,src)
 #define ttisfloatK(o) ttisfloat(o)
 #define ttisintegerK(o) ttisinteger(o)
 #define ivalueK(o) ivalue(o)
@@ -1181,10 +1199,14 @@ GCObject *load_gcobj(const TValue *o) {
 #define RB(i)	(base+GETARG_B(i))
 #define vRB(i)	s2v(RB(i))
 #ifdef USE_YK
+#  define KAx(i) (((TValue *) yk_promote((void *) k))+GETARG_Ax(i))
 #  define KB(i)	(((TValue *) yk_promote((void *) k))+GETARG_B(i))
+#  define KBx(i) (((TValue *) yk_promote((void *) k))+GETARG_Bx(i))
 #  define KC(i)	(((TValue *) yk_promote((void *) k))+GETARG_C(i))
 #else
+#  define KAx(i) (k+GETARG_Ax(i))
 #  define KB(i)	(k+GETARG_B(i))
+#  define KBx(i) (k+GETARG_Bx(i))
 #  define KC(i)	(k+GETARG_C(i))
 #endif
 #define RC(i)	(base+GETARG_C(i))
@@ -1373,8 +1395,8 @@ void luaV_execute (lua_State *L, CallInfo *ci) {
       }
       vmcase(OP_LOADK) {
         StkId ra = RA(i);
-        TValue *rb = k + GETARG_Bx(i);
-        setobj2s(L, ra, rb);
+        TValue *rb = KBx(i);
+        setobj2sK(L, ra, rb);
         vmbreak;
       }
       vmcase(OP_LOADKX) {
@@ -1382,11 +1404,11 @@ void luaV_execute (lua_State *L, CallInfo *ci) {
         TValue *rb;
 #ifdef USE_YK
         Instruction ni = yk_is_interpreting() ? *pc : load_inst(yk_promote(cl_proto_version), pc); \
-        rb = k + GETARG_Ax(ni); pc++;
+        rb = KAx(ni); pc++;
 #else
         rb = k + GETARG_Ax(*pc); pc++;
 #endif
-        setobj2s(L, ra, rb);
+        setobj2sK(L, ra, rb);
         vmbreak;
       }
       vmcase(OP_LOADFALSE) {
