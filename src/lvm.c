@@ -843,7 +843,7 @@ static void pushclosure (lua_State *L, Proto *p, UpVal **encup, StkId base,
   if (yk_is_interpreting())
     nup = p->sizeupvalues;
   else {
-    p = (Proto *) yk_promote((void *) p);
+    p = yk_promote(p);
     nup = luaF_proto_sizeupvalues(p);
   }
 #else
@@ -1205,10 +1205,10 @@ GCObject *load_gcobj(const TValue *o) {
 #define RB(i)	(base+GETARG_B(i))
 #define vRB(i)	s2v(RB(i))
 #ifdef USE_YK
-#  define KAx(i) (((TValue *) yk_promote((void *) k))+GETARG_Ax(i))
-#  define KB(i)	(((TValue *) yk_promote((void *) k))+GETARG_B(i))
-#  define KBx(i) (((TValue *) yk_promote((void *) k))+GETARG_Bx(i))
-#  define KC(i)	(((TValue *) yk_promote((void *) k))+GETARG_C(i))
+#  define KAx(i) (yk_promote(k)+GETARG_Ax(i))
+#  define KB(i)	(yk_promote(k)+GETARG_B(i))
+#  define KBx(i) (yk_promote(k)+GETARG_Bx(i))
+#  define KC(i)	(yk_promote(k)+GETARG_C(i))
 #else
 #  define KAx(i) (k+GETARG_Ax(i))
 #  define KB(i)	(k+GETARG_B(i))
@@ -1305,7 +1305,7 @@ GCObject *load_gcobj(const TValue *o) {
   if (yk_is_interpreting()) { \
     fetched_inst = *(pc + (off)); \
   } else { \
-    pc = (const Instruction *) yk_promote((void *) pc); \
+    pc = yk_promote(pc); \
     uint64_t pv = yk_promote(cl_proto_version); \
     fetched_inst = __load_inst(pv, pc + (off)); \
   } \
