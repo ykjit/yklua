@@ -839,7 +839,13 @@ __attribute__((yk_unroll))
 static void pushclosure (lua_State *L, Proto *p, UpVal **encup, StkId base,
                          StkId ra) {
 #ifdef USE_YK
-  int nup = yk_promote(p->sizeupvalues);
+  int nup;
+  if (yk_is_interpreting())
+    nup = p->sizeupvalues;
+  else {
+    p = (Proto *) yk_promote((void *) p);
+    nup = luaF_proto_sizeupvalues(p);
+  }
 #else
   int nup = p->sizeupvalues;
 #endif

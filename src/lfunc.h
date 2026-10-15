@@ -68,5 +68,8 @@ LUAI_FUNC void luaF_freeproto (lua_State *L, Proto *f);
 LUAI_FUNC const char *luaF_getlocalname (const Proto *func, int local_number,
                                          int pc);
 
+#ifdef USE_YK
+LUAI_FUNC int luaF_proto_sizeupvalues(Proto *p);
+#endif
 
 #endif

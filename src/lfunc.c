@@ -337,3 +337,14 @@ const char *luaF_getlocalname (const Proto *f, int local_number, int pc) {
   }
   return NULL;  /* not found */
 }
+
+
+#ifdef USE_YK
+#define NOOPT_VAL(X) asm volatile("" : "+r,m"(X) : : "memory");
+
+__attribute__((yk_idempotent))
+int luaF_proto_sizeupvalues(Proto *p) {
+  NOOPT_VAL(p);
+  return p->sizeupvalues;
+}
+#endif
