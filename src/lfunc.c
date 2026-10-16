@@ -312,6 +312,7 @@ void luaF_freeproto (lua_State *L, Proto *f) {
   luaM_freearray(L, f->upvalues, cast_sizet(f->sizeupvalues));
 #ifdef USE_YK
   luaM_freearray(L, f->yklocs, f->sizeyklocs);
+  yk_retire_code_id(G(L)->yk_mt, f->proto_version);
 #ifdef YKLUA_DEBUG_STRS
   for (int i = 0; i < f->sizeyklocs; i++)
     free(f->instdebugstrs[i]);
