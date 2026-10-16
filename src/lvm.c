@@ -1306,7 +1306,7 @@ GCObject *load_gcobj(const TValue *o) {
     fetched_inst = *(pc + (off)); \
   } else { \
     pc = yk_promote(pc); \
-    uint64_t pv = yk_promote(cl_proto_version); \
+    uint64_t pv = yk_promote_code_id(cl_proto_version); \
     fetched_inst = __load_inst(pv, pc + (off)); \
   } \
   fetched_inst; \
