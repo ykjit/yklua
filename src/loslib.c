@@ -194,6 +194,7 @@ static int os_clock (lua_State *L) {
 
 #include <sys/time.h>
 #include "llimits.h"
+__attribute__((yk_indirect_inline))
 static int os_monotonic (lua_State *L) {
   struct timespec ts;
   if (clock_gettime(CLOCK_MONOTONIC, &ts) == 0) {
