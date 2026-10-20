@@ -125,6 +125,7 @@ static int luaB_error (lua_State *L) {
 }
 
 
+__attribute__((yk_indirect_inline))
 static int luaB_getmetatable (lua_State *L) {
   luaL_checkany(L, 1);
   if (!lua_getmetatable(L, 1)) {
@@ -136,6 +137,7 @@ static int luaB_getmetatable (lua_State *L) {
 }
 
 
+__attribute__((yk_indirect_inline))
 static int luaB_setmetatable (lua_State *L) {
   int t = lua_type(L, 2);
   luaL_checktype(L, 1, LUA_TTABLE);
@@ -257,6 +259,7 @@ static int luaB_collectgarbage (lua_State *L) {
 }
 
 
+__attribute__((yk_indirect_inline))
 static int luaB_type (lua_State *L) {
   int t = lua_type(L, 1);
   luaL_argcheck(L, t != LUA_TNONE, 1, "value expected");
@@ -265,6 +268,7 @@ static int luaB_type (lua_State *L) {
 }
 
 
+__attribute__((yk_indirect_inline))
 static int luaB_next (lua_State *L) {
   luaL_checktype(L, 1, LUA_TTABLE);
   lua_settop(L, 2);  /* create a 2nd argument if there isn't one */
@@ -301,6 +305,7 @@ static int luaB_pairs (lua_State *L) {
 /*
 ** Traversal function for 'ipairs'
 */
+__attribute__((yk_indirect_inline))
 static int ipairsaux (lua_State *L) {
   lua_Integer i = luaL_checkinteger(L, 2);
   i = luaL_intop(+, i, 1);
@@ -313,6 +318,7 @@ static int ipairsaux (lua_State *L) {
 ** 'ipairs' function. Returns 'ipairsaux', given "table", 0.
 ** (The given "table" may not be a table.)
 */
+__attribute__((yk_indirect_inline))
 static int luaB_ipairs (lua_State *L) {
   luaL_checkany(L, 1);
   lua_pushcfunction(L, ipairsaux);  /* iteration function */
@@ -394,6 +400,7 @@ static const char *generic_reader (lua_State *L, void *ud, size_t *size) {
 }
 
 
+__attribute__((yk_indirect_inline))
 static int luaB_load (lua_State *L) {
   int status;
   size_t l;
@@ -432,6 +439,7 @@ static int luaB_dofile (lua_State *L) {
 }
 
 
+__attribute__((yk_indirect_inline))
 static int luaB_assert (lua_State *L) {
   if (l_likely(lua_toboolean(L, 1)))  /* condition is true? */
     return lua_gettop(L);  /* return all arguments */
@@ -445,6 +453,7 @@ static int luaB_assert (lua_State *L) {
 }
 
 
+__attribute__((yk_indirect_inline))
 static int luaB_select (lua_State *L) {
   int n = lua_gettop(L);
   if (lua_type(L, 1) == LUA_TSTRING && *lua_tostring(L, 1) == '#') {
@@ -479,6 +488,7 @@ static int finishpcall (lua_State *L, int status, lua_KContext extra) {
 }
 
 
+__attribute__((yk_indirect_inline))
 static int luaB_pcall (lua_State *L) {
   int status;
   luaL_checkany(L, 1);

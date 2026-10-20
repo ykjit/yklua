@@ -37,6 +37,7 @@
 #endif
 
 
+__attribute__((yk_indirect_inline))
 static int str_len (lua_State *L) {
   size_t l;
   luaL_checklstring(L, 1, &l);
@@ -82,6 +83,7 @@ static size_t getendpos (lua_State *L, int arg, lua_Integer def,
 }
 
 
+__attribute__((yk_indirect_inline))
 static int str_sub (lua_State *L) {
   size_t l;
   const char *s = luaL_checklstring(L, 1, &l);
@@ -304,6 +306,7 @@ static int arith_sub (lua_State *L) {
   return arith(L, LUA_OPSUB, "__sub");
 }
 
+__attribute__((yk_indirect_inline))
 static int arith_mul (lua_State *L) {
   return arith(L, LUA_OPMUL, "__mul");
 }
@@ -819,6 +822,7 @@ static int str_find_aux (lua_State *L, int find) {
 }
 
 
+__attribute__((yk_indirect_inline))
 static int str_find (lua_State *L) {
   return str_find_aux(L, 1);
 }
@@ -854,6 +858,7 @@ static int gmatch_aux (lua_State *L) {
 }
 
 
+__attribute__((yk_indirect_inline))
 static int gmatch (lua_State *L) {
   size_t ls, lp;
   const char *s = luaL_checklstring(L, 1, &ls);

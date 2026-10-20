@@ -39,12 +39,14 @@ static int math_abs (lua_State *L) {
 }
 
 
+__attribute__((yk_indirect_inline))
 static int math_sin (lua_State *L) {
   lua_pushnumber(L, l_mathop(sin)(luaL_checknumber(L, 1)));
   return 1;
 }
 
 
+__attribute__((yk_indirect_inline))
 static int math_cos (lua_State *L) {
   lua_pushnumber(L, l_mathop(cos)(luaL_checknumber(L, 1)));
   return 1;
@@ -99,6 +101,7 @@ static void pushnumint (lua_State *L, lua_Number d) {
 }
 
 
+__attribute__((yk_indirect_inline))
 static int math_floor (lua_State *L) {
   if (lua_isinteger(L, 1))
     lua_settop(L, 1);  /* integer is its own floor */
@@ -160,6 +163,7 @@ static int math_modf (lua_State *L) {
 }
 
 
+__attribute__((yk_indirect_inline))
 static int math_sqrt (lua_State *L) {
   lua_pushnumber(L, l_mathop(sqrt)(luaL_checknumber(L, 1)));
   return 1;
@@ -579,6 +583,7 @@ static lua_Unsigned project (lua_Unsigned ran, lua_Unsigned n,
 }
 
 
+__attribute__((yk_indirect_inline))
 static int math_random (lua_State *L) {
   lua_Integer low, up;
   lua_Unsigned p;

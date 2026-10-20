@@ -1305,8 +1305,8 @@ GCObject *load_gcobj(const TValue *o) {
   if (yk_is_interpreting()) { \
     fetched_inst = *(pc + (off)); \
   } else { \
-    (void) yk_promote(pc); \
     (void) yk_promote_code_id(cl_proto_version); \
+    (void) yk_promote(pc); \
     fetched_inst = __load_inst(cl_proto_version, pc + (off)); \
   } \
   fetched_inst; \

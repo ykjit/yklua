@@ -385,6 +385,7 @@ static int f_lines (lua_State *L) {
 ** closed, also returns the file itself as a second result (to be
 ** closed as the state at the exit of a generic for).
 */
+__attribute__((yk_indirect_inline))
 static int io_lines (lua_State *L) {
   int toclose;
   if (lua_isnone(L, 1)) lua_pushnil(L);  /* at least one argument */
