@@ -843,7 +843,7 @@ static void pushclosure (lua_State *L, Proto *p, UpVal **encup, StkId base,
   if (yk_is_interpreting())
     nup = p->sizeupvalues;
   else {
-    p = yk_promote(p);
+    (void) yk_promote(p);
     nup = luaF_proto_sizeupvalues(p);
   }
 #else
@@ -1305,9 +1305,9 @@ GCObject *load_gcobj(const TValue *o) {
   if (yk_is_interpreting()) { \
     fetched_inst = *(pc + (off)); \
   } else { \
-    pc = yk_promote(pc); \
-    uint64_t pv = yk_promote_code_id(cl_proto_version); \
-    fetched_inst = __load_inst(pv, pc + (off)); \
+    (void) yk_promote(pc); \
+    (void) yk_promote_code_id(cl_proto_version); \
+    fetched_inst = __load_inst(cl_proto_version, pc + (off)); \
   } \
   fetched_inst; \
 })
@@ -1418,7 +1418,7 @@ void luaV_execute (lua_State *L, CallInfo *ci) {
         StkId ra = RA(i);
         TValue *rb;
 #ifdef USE_YK
-        rb = KAx(load_inst(0)); pc++;
+        rb = k + GETARG_Ax(load_inst(0)); pc++;
 #else
         rb = k + GETARG_Ax(*pc); pc++;
 #endif
