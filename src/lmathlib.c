@@ -27,6 +27,7 @@
 #define PI	(l_mathop(3.141592653589793238462643383279502884))
 
 
+__attribute__((yk_indirect_inline))
 static int math_abs (lua_State *L) {
   if (lua_isinteger(L, 1)) {
     lua_Integer n = lua_tointeger(L, 1);
