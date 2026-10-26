@@ -998,12 +998,12 @@ void luaV_finishOp (lua_State *L) {
   if (yk_is_interpreting()) { setobj2s(L, dst, src); } \
   else { \
     TValue *target = s2v(dst); \
-    lu_byte tag = load_tag(src); \
+    lu_byte tag = yk_idempotent_load(&(src)->tt_); \
     switch (tag) { \
-      case LUA_VNUMINT: target->value_.i = load_int(src); break; \
+      case LUA_VNUMINT: target->value_.i = yk_idempotent_load(&(src)->value_.i); break; \
       case LUA_VNUMFLT: target->value_.n = fltvalueK(src); break; \
       case ctb(LUA_VSHRSTR): case ctb(LUA_VLNGSTR): \
-        target->value_.gc = load_gcobj(src); break; \
+        target->value_.gc = yk_idempotent_load(&(src)->value_.gc); break; \
       default: target->value_ = src->value_; break; \
     } \
     settt_(target, tag); \
@@ -1011,14 +1011,14 @@ void luaV_finishOp (lua_State *L) {
     lua_assert(!isnonstrictnil(target)); \
   } }
 
-#define ttisfloatK(o) (load_tag(o) == LUA_VNUMFLT)
-#define ttisintegerK(o) (load_tag(o) == LUA_VNUMINT)
-#define ivalueK(o) load_int(o)
+#define ttisfloatK(o) (yk_idempotent_load(&(o)->tt_) == LUA_VNUMFLT)
+#define ttisintegerK(o) (yk_idempotent_load(&(o)->tt_) == LUA_VNUMINT)
+#define ivalueK(o) (yk_idempotent_load(&(o)->value_.i))
 // Promote a known constant `TString` when tracing.
 #define tsvalueK(o) \
-  (yk_is_interpreting() ? tsvalue(o) : gco2ts(load_gcobj(o)))
+  (yk_is_interpreting() ? tsvalue(o) : gco2ts(yk_idempotent_load(&(o)->value_.gc)))
 // FIXME: We currently have to use memcpy to bitcast from uint64_t to lua_Number
-#define fltvalueK(o) ({ uint64_t x = load_flt(o); lua_Number y; memcpy(&y, &x, sizeof(lua_Number)); y; })
+#define fltvalueK(o) (yk_idempotent_load(&(o)->value_.n))
 #define tointegernsK(o,i) \
   (l_likely(ttisintegerK(o)) ? (*(i) = ivalueK(o), 1) \
                           : luaV_tointegerns(o,i,LUA_FLOORN2I))
@@ -1033,40 +1033,6 @@ void luaV_finishOp (lua_State *L) {
     pc++; setivalue(s2v(ra), iop(L, i1, i2));  \
   }  \
   else op_arithf_aux(L, v1, v2, fop); }
-
-// Returns the type tag for `o`.
-__attribute__((yk_idempotent))
-lu_byte load_tag(const TValue *o) {
-  NOOPT_VAL(o);
-  return o->tt_;
-}
-
-// Returns the `lua_Number` floating point number stored in `o`. The caller is
-// responsible for checking that this `TValue` really contains a `lua_Number`.
-__attribute__((yk_idempotent))
-uint64_t load_flt(const TValue *o) {
-  NOOPT_VAL(o);
-  uint64_t x;
-  // FIXME: We currently have to use memcpy to bitcast from lua_Number to uint64_t
-  memcpy(&x, &o->value_.n, sizeof(lua_Number));
-  return x;
-}
-
-// Returns the `lua_Integer` integer stored in `o`. The caller is responsible
-// for checking that this `TValue` really contains a `lua_Integer`.
-__attribute__((yk_idempotent))
-lua_Integer load_int(const TValue *o) {
-  NOOPT_VAL(o);
-  return o->value_.i;
-}
-
-// Returns the collectable object stored in `o`. The caller is responsible for
-// checking that this `TValue` really contains a collectable object.
-__attribute__((yk_idempotent))
-GCObject *load_gcobj(const TValue *o) {
-  NOOPT_VAL(o);
-  return o->value_.gc;
-}
 #else
 #define setobj2sK(L,dst,src) setobj2s(L,dst,src)
 #define ttisfloatK(o) ttisfloat(o)
