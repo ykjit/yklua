@@ -615,6 +615,10 @@ l_sinline void moveresults (lua_State *L, StkId res, int nres,
 */
 void luaD_poscall (lua_State *L, CallInfo *ci, int nres) {
   l_uint32 fwanted = ci->callstatus & (CIST_TBC | CIST_NRESULTS);
+#ifdef USE_YK
+  if (!yk_is_interpreting())
+    yk_promote(fwanted);
+#endif
   if (l_unlikely(L->hookmask) && !(fwanted & CIST_TBC))
     rethook(L, ci, nres);
   /* move results to proper place */
