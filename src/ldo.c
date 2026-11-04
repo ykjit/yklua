@@ -704,7 +704,8 @@ int luaD_pretailcall (lua_State *L, CallInfo *ci, StkId func,
         // If this is a recursive call and we don't yet have a yk_location,
         // create one now.
         LClosure *caller_cl = ci_func(ci);
-        if (cl->called && yk_location_is_null(p->yklocs[0])) {
+        if ((cl->called || caller_cl->p == p) &&
+            yk_location_is_null(p->yklocs[0])) {
           p->yklocs[0] = yk_location_new();
 #if YKLUA_DEBUG_STRS
           yk_location_set_debug_str(&p->yklocs[0], p->instdebugstrs[0]);
