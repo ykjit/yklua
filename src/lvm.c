@@ -1053,20 +1053,31 @@ void luaV_finishOp (lua_State *L) {
 
 #define setobj2sK(L,dst,src) { \
   if (yk_is_interpreting()) { setobj2s(L, dst, src); } \
-  else { \
-    TValue *target = s2v(dst); \
-    lu_byte tag = yk_idempotent_load(&(src)->tt_); \
-    switch (tag) { \
-      case LUA_VNUMINT: target->value_.i = yk_idempotent_load(&(src)->value_.i); break; \
-      case LUA_VNUMFLT: target->value_.n = fltvalueK(src); break; \
-      case ctb(LUA_VSHRSTR): case ctb(LUA_VLNGSTR): \
-        target->value_.gc = yk_idempotent_load(&(src)->value_.gc); break; \
-      default: target->value_ = src->value_; break; \
-    } \
-    settt_(target, tag); \
-    checkliveness(L, target); \
-    lua_assert(!isnonstrictnil(target)); \
-  } }
+  else { luaV_setobj2sK(L, dst, src); } \
+}
+
+__attribute__((noinline))
+void luaV_setobj2sK (lua_State *L, StkId dst, const TValue *src) {
+  TValue *target = s2v(dst);
+  lu_byte tag = yk_idempotent_load(&src->tt_);
+  switch (tag) {
+    case LUA_VNUMINT:
+      target->value_.i = yk_idempotent_load(&src->value_.i);
+      break;
+    case LUA_VNUMFLT:
+      target->value_.n = yk_idempotent_load(&src->value_.n);
+      break;
+    case ctb(LUA_VSHRSTR): case ctb(LUA_VLNGSTR):
+      target->value_.gc = yk_idempotent_load(&src->value_.gc);
+      break;
+    default:
+      target->value_ = src->value_;
+      break;
+  }
+  settt_(target, tag);
+  checkliveness(L, target);
+  lua_assert(!isnonstrictnil(target));
+}
 
 #define ttisfloatK(o) (yk_idempotent_load(&(o)->tt_) == LUA_VNUMFLT)
 #define ttisintegerK(o) (yk_idempotent_load(&(o)->tt_) == LUA_VNUMINT)
