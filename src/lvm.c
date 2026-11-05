@@ -657,6 +657,63 @@ int luaV_equalobj (lua_State *L, const TValue *t1, const TValue *t2) {
 }
 
 
+#ifdef USE_YK
+/*
+** luaV_equalobj specialised for a constant `t2`.
+*/
+__attribute__((noinline))
+int luaV_equalobjK (const TValue *t1, const TValue *t2) {
+  switch (yk_idempotent_load(&t2->tt_)) {
+    case LUA_VNIL:
+      return ttisstrictnil(t1);
+    case LUA_VFALSE:
+      return ttisfalse(t1);
+    case LUA_VTRUE:
+      return ttistrue(t1);
+    case LUA_VNUMINT: {
+      lua_Integer k = yk_idempotent_load(&t2->value_.i);
+      if (ttisinteger(t1))
+        return ivalue(t1) == k;
+      else if (ttisfloat(t1)) {
+        lua_Integer i;
+        luaV_flttointeger(fltvalue(t1), &i, F2Ieq);
+        return i == k;
+      }
+      else
+        return 0;
+    }
+    case LUA_VNUMFLT: {
+      lua_Number k = yk_idempotent_load(&t2->value_.n);
+      if (ttisfloat(t1))
+        return luai_numeq(fltvalue(t1), k);
+      else if (ttisinteger(t1)) {
+        lua_Integer i;
+        luaV_flttointeger(k, &i, F2Ieq);
+        return ivalue(t1) == i;
+      }
+      else
+        return 0;
+    }
+    case ctb(LUA_VSHRSTR): {
+      TString *key = gco2ts(yk_idempotent_load(&t2->value_.gc));
+      if (ttisshrstring(t1))
+        return eqshrstr(tsvalue(t1), key);
+      else if (ttislngstring(t1))
+        return luaS_eqstr(tsvalue(t1), key);
+      else
+        return 0;
+    }
+    case ctb(LUA_VLNGSTR): {
+      TString *key = gco2ts(yk_idempotent_load(&t2->value_.gc));
+      return ttisstring(t1) && luaS_eqstr(tsvalue(t1), key);
+    }
+    default:
+      return luaV_rawequalobj(t1, t2);
+  }
+}
+#endif
+
+
 /* macro used by 'luaV_concat' to ensure that element at 'o' is a string */
 #define tostring(L,o)  \
 	(ttisstring(o) || (cvt2str(o) && (luaO_tostring(L, o), 1)))
@@ -1814,7 +1871,15 @@ void luaV_execute (lua_State *L, CallInfo *ci) {
         StkId ra = RA(i);
         TValue *rb = KB(i);
         /* basic types do not use '__eq'; we can use raw equality */
+#ifdef USE_YK
+        int cond;
+        if (yk_is_interpreting())
+          cond = luaV_rawequalobj(s2v(ra), rb);
+        else
+          cond = luaV_equalobjK(s2v(ra), rb);
+#else
         int cond = luaV_rawequalobj(s2v(ra), rb);
+#endif
         docondjump();
         vmbreak;
       }
