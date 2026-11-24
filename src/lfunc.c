@@ -311,12 +311,16 @@ void luaF_freeproto (lua_State *L, Proto *f) {
   luaM_freearray(L, f->locvars, cast_sizet(f->sizelocvars));
   luaM_freearray(L, f->upvalues, cast_sizet(f->sizeupvalues));
 #ifdef USE_YK
-  luaM_freearray(L, f->yklocs, f->sizeyklocs);
   yk_retire_code_id(G(L)->yk_mt, f->proto_version);
-#ifdef YKLUA_DEBUG_STRS
   for (int i = 0; i < f->sizeyklocs; i++)
-    free(f->instdebugstrs[i]);
-  luaM_freearray(L, f->instdebugstrs, f->sizeyklocs);
+    yk_location_drop(f->yklocs[i]);
+  luaM_freearray(L, f->yklocs, f->sizeyklocs);
+#ifdef YKLUA_DEBUG_STRS
+  if (f->instdebugstrs) {
+    for (int i = 0; i < f->sizeyklocs; i++)
+      free(f->instdebugstrs[i]);
+    luaM_freearray(L, f->instdebugstrs, f->sizeyklocs);
+  }
 #endif
 #endif
   luaM_free(L, f);

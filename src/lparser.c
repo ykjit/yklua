@@ -894,13 +894,14 @@ err:
  */
 void ykifyCode(lua_State *L, Proto *f, int num_insts) {
   f->yklocs = luaM_newvectorchecked(L, num_insts, YkLocation);
+  for (int pc = 0; pc < num_insts; pc++)
+    f->yklocs[pc] = yk_location_null();
   f->sizeyklocs = num_insts;
 #ifdef YKLUA_DEBUG_STRS
   f->instdebugstrs = luaM_newvectorchecked(L, num_insts, char *);
 #endif
   lua_assert(num_insts > 0);
   for (int pc = 0; pc < num_insts; pc++) {
-    f->yklocs[pc] = yk_location_null();
     Instruction i = f->code[pc];
 #ifdef YKLUA_DEBUG_STRS
     char *dstr = luaG_ykdebug_str(f, pc);
@@ -926,6 +927,8 @@ void ykifyCode(lua_State *L, Proto *f, int num_insts) {
     } else {
       continue;
     }
+    if (!yk_location_is_null(f->yklocs[loc_pc]))
+      continue;
     YkLocation loc = yk_location_new();
 #if YKLUA_DEBUG_STRS
     char *loc_dstr = luaG_ykdebug_str(f, loc_pc);
