@@ -1051,6 +1051,20 @@ void luaV_finishOp (lua_State *L) {
 #ifdef USE_YK
 #define NOOPT_VAL(X) asm volatile("" : "+r,m"(X) : : "memory");
 
+#define finishfastsetRKC(L,t,v,i) \
+  ((TESTARG_k(i) && yk_is_interpreting()) \
+   ? luaV_finishfastset(L, t, v) : luaV_finishfastsetK(L, t, v))
+
+// This is a version of `luaV_finishfastset` for constant values `v`. Passing a
+// non-constant `v` leads to undefined behaviour.
+__attribute__((noinline))
+void luaV_finishfastsetK (lua_State *L, const TValue *t, const TValue *v) {
+  if (yk_idempotent_load(&v->tt_) & BIT_ISCOLLECTABLE) {
+    GCObject *o = yk_idempotent_load(&v->value_.gc);
+    luaC_objbarrierback(L, gcvalue(t), o);
+  }
+}
+
 #define setobj2sK(L,dst,src) { \
   if (yk_is_interpreting()) { setobj2s(L, dst, src); } \
   else { luaV_setobj2sK(L, dst, src); } \
@@ -1102,6 +1116,7 @@ void luaV_setobj2sK (lua_State *L, StkId dst, const TValue *src) {
   }  \
   else op_arithf_aux(L, v1, v2, fop); }
 #else
+#define finishfastsetRKC(L,t,v,i) luaV_finishfastset(L,t,v)
 #define setobj2sK(L,dst,src) setobj2s(L,dst,src)
 #define ttisfloatK(o) ttisfloat(o)
 #define ttisintegerK(o) ttisinteger(o)
@@ -1553,7 +1568,7 @@ void luaV_execute (lua_State *L, CallInfo *ci) {
         TString *key = tsvalueK(rb);  /* key must be a short string */
         luaV_fastset(upval, key, rc, hres, luaH_psetshortstr);
         if (hres == HOK)
-          luaV_finishfastset(L, upval, rc);
+          finishfastsetRKC(L, upval, rc, i);
         else
           Protect(luaV_finishset(L, upval, rb, rc, hres));
         vmbreak;
@@ -1570,7 +1585,7 @@ void luaV_execute (lua_State *L, CallInfo *ci) {
           luaV_fastset(s2v(ra), rb, rc, hres, luaH_pset);
         }
         if (hres == HOK)
-          luaV_finishfastset(L, s2v(ra), rc);
+          finishfastsetRKC(L, s2v(ra), rc, i);
         else
           Protect(luaV_finishset(L, s2v(ra), rb, rc, hres));
         vmbreak;
@@ -1582,7 +1597,7 @@ void luaV_execute (lua_State *L, CallInfo *ci) {
         TValue *rc = RKC(i);
         luaV_fastseti(s2v(ra), b, rc, hres);
         if (hres == HOK)
-          luaV_finishfastset(L, s2v(ra), rc);
+          finishfastsetRKC(L, s2v(ra), rc, i);
         else {
           TValue key;
           setivalue(&key, b);
@@ -1598,7 +1613,7 @@ void luaV_execute (lua_State *L, CallInfo *ci) {
         TString *key = tsvalueK(rb);  /* key must be a short string */
         luaV_fastset(s2v(ra), key, rc, hres, luaH_psetshortstr);
         if (hres == HOK)
-          luaV_finishfastset(L, s2v(ra), rc);
+          finishfastsetRKC(L, s2v(ra), rc, i);
         else
           Protect(luaV_finishset(L, s2v(ra), rb, rc, hres));
         vmbreak;
