@@ -1108,13 +1108,21 @@ void luaV_setobj2sK (lua_State *L, StkId dst, const TValue *src) {
 	(ttisfloatK(o) ? ((n) = fltvalueK(o), 1) : \
 	(ttisintegerK(o) ? ((n) = cast_num(ivalueK(o)), 1) : 0))
 
+#define op_arithfK_aux(L,v1,v2,fop) { \
+  lua_Number n1; lua_Number n2; \
+  if (tonumberns(v1, n1) && \
+      (yk_is_interpreting() ? tonumberns(v2, n2) : tonumbernsK(v2, n2))) { \
+    StkId ra = RA(i); \
+    pc++; setfltvalue(s2v(ra), fop(L, n1, n2)); \
+  }}
+
 #  define op_arithK_aux(L,v1,v2,iop,fop) {  \
   if (ttisinteger(v1) && ttisintegerK(v2)) {  \
     StkId ra = RA(i); \
     lua_Integer i1 = ivalue(v1); lua_Integer i2 = ivalueK(v2);  \
     pc++; setivalue(s2v(ra), iop(L, i1, i2));  \
   }  \
-  else op_arithf_aux(L, v1, v2, fop); }
+  else op_arithfK_aux(L, v1, v2, fop); }
 #else
 #define finishfastsetRKC(L,t,v,i) luaV_finishfastset(L,t,v)
 #define setobj2sK(L,dst,src) setobj2s(L,dst,src)
@@ -1133,7 +1141,7 @@ void luaV_setobj2sK (lua_State *L, StkId dst, const TValue *src) {
 #define op_arithfK(L,fop) {  \
   TValue *v1 = vRB(i);  \
   TValue *v2 = KC(i); lua_assert(ttisnumber(v2));  \
-  op_arithf_aux(L, v1, v2, fop); }
+  op_arithfK_aux(L, v1, v2, fop); }
 
 
 /*
